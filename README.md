@@ -1,4 +1,4 @@
-# Roomist (OpenGL GLUT)
+# Ruang (OpenGL GLUT)
 
 Project ini adalah simulator layout arsitektur berbasis state machine (state-driven) yang bertujuan untuk mendekorasi suatu ruangan.
 
