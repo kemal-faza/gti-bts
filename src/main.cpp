@@ -42,12 +42,6 @@ static void StartLevel(int index)
     gState.penaltyCount = 0;
     gState.isFlyThrough = false;
     gSceneObjects.clear();
-
-    // Auto-spawn kipas langit-langit jika level memintanya
-    const LevelData &lv = GetCurrentLevel();
-    if (lv.autoSpawnFan)
-        SpawnRotatingFan();
-
     glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
     gState.titleDirty = true;
     glutPostRedisplay();
@@ -122,7 +116,7 @@ static bool HandleGlobalKeys(unsigned char key)
 
 static void HandleEditKeys(unsigned char key)
 {
-    if (key >= '1' && key <= '8')
+    if (key >= '1' && key <= '9')
     {
         gState.selectedFurnitureType = key - '1';
         gState.titleDirty = true;
@@ -420,6 +414,7 @@ void InitGL()
 
     InitTextures();
     LoadAllGLTFModels();
+    FontInit();
 
     glClearStencil(0);
     glClearColor(0.08f, 0.09f, 0.12f, 1.0f);
@@ -434,8 +429,9 @@ void InitGL()
     glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
-static void CleanupModels()
+static void CleanupAll()
 {
+    FontCleanup();
     for (int i = 0; i < 16; ++i)
     {
         if (!gGLTFModels[i].primitives.empty())
@@ -458,8 +454,8 @@ int main(int argc, char **argv)
     UpdateWindowTitle();
     gState.titleDirty = false;
 
-    // Register cleanup agar textures terhapus saat exit
-    std::atexit(CleanupModels);
+    // Register cleanup agar textures + font terhapus saat exit
+    std::atexit(CleanupAll);
 
     glutDisplayFunc(Display);
     glutReshapeFunc(Reshape);

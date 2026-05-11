@@ -8,11 +8,7 @@
 #include <cmath>
 #include <cstdio>
 
-// ── Font selection (stroke fonts — always proportional to window size) ──
-// Heading: GLUT_STROKE_ROMAN (proportional, serif)
-// Body:    GLUT_STROKE_MONO_ROMAN (monospace, clean)
-#define HEADING_FONT ((void *)GLUT_STROKE_ROMAN)
-#define BODY_FONT    ((void *)GLUT_STROKE_MONO_ROMAN)
+
 
 // ---------------------------------------------------------------------------
 //  Shading / depth helpers
@@ -668,17 +664,19 @@ void RenderHUD()
 
     const float W = static_cast<float>(gWindowWidth);
     const float H = static_cast<float>(gWindowHeight);
-    const float margin = W * 0.015f;       // ~1.5% width
+    const float margin = W * 0.012f;       // ~1.2% width
 
-    const float hLineH = UIHeadingLineH();
-    const float bLineH = UIBodyLineH();
+    const float hScale = HeadingScale();
+    const float bScale = BodyScale();
+    const float hLineH = HeadingLineH();
+    const float bLineH = BodyLineH();
 
     // ── Background semi-transparan (proportional to window) ──
-    const int bgW = static_cast<int>(W * 0.28f);
-    const int bgH = static_cast<int>(H * 0.78f);
+    const int bgW = static_cast<int>(W * 0.22f);
+    const int bgH = static_cast<int>(H * 0.58f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glColor4f(0.0f, 0.0f, 0.0f, 0.55f);
+    glColor4f(0.0f, 0.0f, 0.0f, 0.50f);
     glBegin(GL_QUADS);
     glVertex2i(0, 0);
     glVertex2i(bgW, 0);
@@ -693,21 +691,19 @@ void RenderHUD()
     // ── Heading: "Level N: RoomName" ──
     std::snprintf(buf, sizeof(buf), "Level %d: %s", level.levelNumber, level.roomName);
     SetColor(1.0f, 1.0f, 1.0f);
-    RenderString(margin, H * 0.030f, HEADING_FONT, buf);
+    RenderString(margin, H * 0.020f, hScale, buf);
 
     // ── Budget ──
     int spent = 0;
     for (const auto &obj : gSceneObjects)
         spent += obj.cost;
-    if (spent <= level.budget)
-        SetColor(0.2f, 1.0f, 0.2f);
-    else
-        SetColor(1.0f, 0.2f, 0.2f);
+    SetColor(spent <= level.budget ? 0.2f : 1.0f,
+             spent <= level.budget ? 1.0f : 0.2f, 0.2f);
     std::snprintf(buf, sizeof(buf), "Budget: %d / %d", spent, level.budget);
-    RenderString(margin, H * 0.030f + hLineH + bLineH * 0.3f, BODY_FONT, buf);
+    RenderString(margin, H * 0.020f + hLineH + bLineH * 0.4f, bScale, buf);
 
     // ── Checklist — item wajib ──
-    float lineY = H * 0.030f + hLineH + bLineH * 0.3f + bLineH * 1.5f;
+    float lineY = H * 0.020f + hLineH + bLineH * 0.4f + bLineH * 1.3f;
     SetColor(0.8f, 0.8f, 1.0f);
     for (const auto &req : level.requiredItems)
     {
@@ -728,33 +724,33 @@ void RenderHUD()
         const char *label = GetSubTypeLabel(req.subType);
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
-        RenderString(margin, lineY, BODY_FONT, buf);
+        RenderString(margin, lineY, bScale, buf);
         lineY += bLineH;
     }
 
     // ── Furniture Selection ──
-    lineY += bLineH * 0.5f;
+    lineY += bLineH * 0.4f;
     SetColor(0.55f, 0.55f, 0.55f);
-    RenderString(margin, lineY, BODY_FONT, "--- Furniture (1-8) ---");
+    RenderString(margin, lineY, bScale, "--- Furniture (1-9) ---");
     lineY += bLineH;
 
     const char *furnitureNames[] = {
         "1. Meja", "2. Sofa", "3. Kursi",
         "4. Meja Bundar", "5. Lemari", "6. Rak",
-        "7. Karpet", "8. Lampu"
+        "7. Karpet", "8. Lampu", "9. Kipas"
     };
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 9; ++i)
     {
         SetColor((i == gState.selectedFurnitureType) ? 1.0f : 0.65f,
                  1.0f, 1.0f);
-        RenderString(margin, lineY, BODY_FONT, furnitureNames[i]);
-        lineY += bLineH * 0.85f;
+        RenderString(margin, lineY, bScale, furnitureNames[i]);
+        lineY += bLineH * 0.82f;
     }
 
     // ── Bonus Rules ──
-    lineY += bLineH * 0.5f;
+    lineY += bLineH * 0.4f;
     SetColor(0.55f, 0.55f, 0.55f);
-    RenderString(margin, lineY, BODY_FONT, "--- Bonus Rules ---");
+    RenderString(margin, lineY, bScale, "--- Bonus Rules ---");
     lineY += bLineH;
 
     for (const auto &rule : level.bonusRules)
@@ -762,13 +758,13 @@ void RenderHUD()
         bool met = CheckBonusRule(rule);
         SetColor(met ? 0.2f : 0.6f, met ? 1.0f : 0.6f, met ? 0.2f : 0.6f);
         std::snprintf(buf, sizeof(buf), "[%c] %s", met ? 'v' : ' ', rule.description);
-        RenderString(margin, lineY, BODY_FONT, buf);
-        lineY += bLineH * 0.85f;
+        RenderString(margin, lineY, bScale, buf);
+        lineY += bLineH * 0.82f;
     }
 
     // ── Petunjuk ──
-    SetColor(0.6f, 0.6f, 0.6f);
-    RenderString(margin, H * 0.95f, BODY_FONT,
+    SetColor(0.5f, 0.5f, 0.5f);
+    RenderString(margin, H * 0.94f, bScale,
                  "Enter=Submit Tab=Edit/View Esc=Menu Q/E=Rotate X=Del");
 
     PopOverlayOrtho();
@@ -782,8 +778,10 @@ void RenderOverlay()
     const float H = static_cast<float>(gWindowHeight);
     const float cx = W * 0.5f;
     const float cy = H * 0.5f;
-    const float hLineH = UIHeadingLineH();
-    const float bLineH = UIBodyLineH();
+    const float hScale = HeadingScale();
+    const float bScale = BodyScale();
+    const float hLineH = HeadingLineH();
+    const float bLineH = BodyLineH();
 
     // Semi-transparent dark overlay (full screen)
     glEnable(GL_BLEND);
@@ -805,91 +803,90 @@ void RenderOverlay()
 
         SetColor(0.3f, 0.6f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Interior Designer - Room %d", level.levelNumber);
-        RenderString(cx - W * 0.12f, cy - H * 0.10f, HEADING_FONT, buf);
+        RenderString(cx - W * 0.10f, cy - H * 0.08f, hScale, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
-        RenderStringMultiline(cx - W * 0.14f, cy - H * 0.06f, BODY_FONT, level.clientBrief);
+        RenderStringMultiline(cx - W * 0.12f, cy - H * 0.04f, bScale, level.clientBrief);
 
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(cx - W * 0.10f, cy + H * 0.08f, HEADING_FONT, "[ Enter ] - Mulai");
+        RenderString(cx - W * 0.08f, cy + H * 0.06f, hScale, "[ Enter ] - Mulai");
 
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - W * 0.08f, cy + H * 0.12f, BODY_FONT, "Esc = Keluar");
+        RenderString(cx - W * 0.06f, cy + H * 0.10f, bScale, "Esc = Keluar");
     }
     else if (gState.gameState == GameState::WIN)
     {
-        const float startY = cy - H * 0.12f;
+        const float startY = cy - H * 0.10f;
 
         SetColor(0.2f, 1.0f, 0.2f);
         std::snprintf(buf, sizeof(buf), " SELESAI! Skor: %d/100", gState.finalScore);
-        RenderString(cx - W * 0.14f, startY, HEADING_FONT, buf);
+        RenderString(cx - W * 0.12f, startY, hScale, buf);
 
         float lineY = startY + hLineH + bLineH * 0.5f;
-
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Requirement:  50/50");
-        RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+        RenderString(cx - W * 0.10f, lineY, bScale, buf);
 
         lineY += bLineH;
         std::snprintf(buf, sizeof(buf), "Bonus:        %d/30", gState.bonusScore);
-        RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+        RenderString(cx - W * 0.10f, lineY, bScale, buf);
 
         lineY += bLineH;
         std::snprintf(buf, sizeof(buf), "Aesthetics:   %d/20", gState.aestheticsScore);
-        RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+        RenderString(cx - W * 0.10f, lineY, bScale, buf);
 
         lineY += bLineH;
         SetColor(1.0f, 0.3f, 0.3f);
         std::snprintf(buf, sizeof(buf), "Penalti:      -%d", gState.penaltyCount * 5);
-        RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+        RenderString(cx - W * 0.10f, lineY, bScale, buf);
 
         lineY += bLineH;
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Budget: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
-        RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+        RenderString(cx - W * 0.10f, lineY, bScale, buf);
 
         lineY += bLineH + hLineH * 0.3f;
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
-            RenderString(cx - W * 0.12f, lineY, HEADING_FONT, "[ Enter ] - Lanjut Level");
+            RenderString(cx - W * 0.10f, lineY, hScale, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
-            RenderString(cx - W * 0.15f, lineY, HEADING_FONT, "Semua Level Selesai!");
+            RenderString(cx - W * 0.13f, lineY, hScale, "Semua Level Selesai!");
         }
 
         lineY += hLineH;
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - W * 0.08f, lineY, BODY_FONT, "Esc = Menu Utama");
+        RenderString(cx - W * 0.07f, lineY, bScale, "Esc = Menu Utama");
     }
     else if (gState.gameState == GameState::LOSE)
     {
         SetColor(1.0f, 0.2f, 0.2f);
-        RenderString(cx - W * 0.06f, cy - H * 0.06f, HEADING_FONT, " GAGAL ");
+        RenderString(cx - W * 0.05f, cy - H * 0.05f, hScale, " GAGAL ");
 
         SetColor(1.0f, 1.0f, 1.0f);
         float lineY = cy + bLineH * 0.3f;
         if (gState.failReason[0] != '\0')
         {
-            RenderString(cx - W * 0.15f, lineY, BODY_FONT, gState.failReason);
+            RenderString(cx - W * 0.13f, lineY, bScale, gState.failReason);
         }
         else
         {
             std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
                           gState.totalSpent, GetCurrentLevel().budget);
-            RenderString(cx - W * 0.12f, lineY, BODY_FONT, buf);
+            RenderString(cx - W * 0.10f, lineY, bScale, buf);
         }
 
-        lineY += bLineH + hLineH * 0.5f;
+        lineY += bLineH + hLineH * 0.4f;
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(cx - W * 0.10f, lineY, HEADING_FONT, "[ Enter ] - Coba Lagi");
+        RenderString(cx - W * 0.08f, lineY, hScale, "[ Enter ] - Coba Lagi");
 
         lineY += hLineH;
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - W * 0.08f, lineY, BODY_FONT, "Esc = Menu Utama");
+        RenderString(cx - W * 0.07f, lineY, bScale, "Esc = Menu Utama");
     }
 
     PopOverlayOrtho();

@@ -216,7 +216,6 @@ const char *GetSubTypeLabel(ObjectSubType subType);
 
 // Object management
 void DeleteSelectedObject();
-void SpawnRotatingFan();
 
 // Bonus rule checker (exposed for HUD display)
 bool CheckBonusRule(const BonusRule &rule);

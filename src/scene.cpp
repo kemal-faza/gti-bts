@@ -217,18 +217,7 @@ void DeleteSelectedObject()
     gState.titleDirty = true;
 }
 
-void SpawnRotatingFan()
-{
-    SceneObject fan;
-    fan.type       = ObjectType::CYLINDER;
-    fan.subType    = ObjectSubType::KIPAS;
-    fan.material   = MaterialType::ROUGH;
-    fan.position   = {0.0f, 3.0f, 0.0f};
-    fan.rotationY  = 0.0f;
-    fan.cost       = 0;   // free, tidak mempengaruhi budget
-    fan.isAnimated = true;
-    gSceneObjects.push_back(fan);
-}
+
 
 void SelectAdjacentObject(const int direction)
 {
@@ -330,6 +319,10 @@ void AddNewObjectInEditMode()
         type = ObjectType::CYLINDER; subType = ObjectSubType::LAMPU;
         material = MaterialType::ROUGH; cost = 6;
         break;
+    case 8: // KIPAS (kipas berdiri di lantai)
+        type = ObjectType::CYLINDER; subType = ObjectSubType::KIPAS;
+        material = MaterialType::ROUGH; cost = 8;
+        break;
     default:
         type = ObjectType::CUBE; subType = ObjectSubType::MEJA;
         material = MaterialType::GLOSSY; cost = 10;
@@ -349,6 +342,9 @@ void AddNewObjectInEditMode()
     }
 
     AddSceneObject(type, subType, material, position, 0.0f, cost);
+    // Set animated flag for kipas berdiri
+    if (subType == ObjectSubType::KIPAS)
+        gSceneObjects.back().isAnimated = true;
     gState.selectedObjectIndex = static_cast<int>(gSceneObjects.size()) - 1;
 }
 
