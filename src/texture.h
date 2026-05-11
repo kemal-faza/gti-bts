@@ -5,4 +5,5 @@
 #include <GL/gl.h>
 
 void InitTextures();
+void ShutdownTextures();
 GLuint GetTextureForSubType(ObjectSubType subType);

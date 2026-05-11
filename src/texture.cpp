@@ -62,8 +62,8 @@ static GLuint gTextures[kMaxSubTypes] = {0};
 
 void InitTextures()
 {
-    // Reset all
-    std::memset(gTextures, 0, sizeof(gTextures));
+    // Bersihkan tekstur lama sebelum generate baru (safe re-call)
+    ShutdownTextures();
 
     // Generate procedural textures per furniture subtype
     // Colors: (r1,g1,b1) = light, (r2,g2,b2) = dark
@@ -97,6 +97,18 @@ void InitTextures()
 
     gTextures[static_cast<int>(ObjectSubType::KIPAS)] =
         GenerateCheckerTexture(64, 2, 200, 200, 200, 150, 150, 150);
+}
+
+void ShutdownTextures()
+{
+    for (int i = 0; i < kMaxSubTypes; ++i)
+    {
+        if (gTextures[i] != 0)
+        {
+            glDeleteTextures(1, &gTextures[i]);
+            gTextures[i] = 0;
+        }
+    }
 }
 
 GLuint GetTextureForSubType(const ObjectSubType subType)
