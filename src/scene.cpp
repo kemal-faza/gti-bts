@@ -1,5 +1,7 @@
 #include "scene.h"
 
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <cstdio>
 #include <cmath>
 
@@ -21,6 +23,7 @@ float gViewDistance  = 18.0f;
 std::vector<SceneObject> gSceneObjects;
 std::vector<LevelData> gLevels;
 bool gKeyDown[256] = {false};
+float gAnimTime = 0.0f;
 
 // ---------------------------------------------------------------------------
 //  Utility
@@ -142,6 +145,33 @@ void AddSceneObject(const ObjectType type, const ObjectSubType subType,
     gSceneObjects.push_back(obj);
 }
 
+static Vec3 FindFreePosition(const ObjectSubType subType)
+{
+    // Coba di tengah dulu, lalu spread ke grid
+    const float offsets[] = {0.0f, 2.0f, 4.0f, 6.0f};
+    for (float o : offsets)
+    {
+        Vec3 candidates[] = {
+            {0.0f,   0.0f, 0.0f},
+            { o,     0.0f, 0.0f},
+            {-o,     0.0f, 0.0f},
+            {0.0f,   0.0f,  o},
+            {0.0f,   0.0f, -o},
+            { o,     0.0f,  o},
+            { o,     0.0f, -o},
+            {-o,     0.0f,  o},
+            {-o,     0.0f, -o},
+        };
+        for (const auto &pos : candidates)
+        {
+            if (CanPlaceAt(-1, subType, pos))
+                return pos;
+        }
+    }
+    // Fallback: tempatkan di (0,0,0) walaupun collided
+    return {0.0f, 0.0f, 0.0f};
+}
+
 void AddNewObjectInEditMode()
 {
     if (gState.activeMode != AppMode::EDIT_ORTHO) return;
@@ -152,13 +182,6 @@ void AddNewObjectInEditMode()
     ObjectSubType subType = ObjectSubType::MEJA;
     MaterialType material = MaterialType::GLOSSY;
     int cost = 10;
-    Vec3 position = {0.0f, 0.0f, 0.0f};
-
-    if (SceneObject *selected = GetSelectedObject())
-    {
-        position = selected->position;
-        position.x += 4.0f;
-    }
 
     switch (typeIdx)
     {
@@ -204,8 +227,11 @@ void AddNewObjectInEditMode()
         break;
     }
 
+    // Cari posisi kosong
+    Vec3 position = FindFreePosition(subType);
+
     // Collision check sebelum placement
-    if (!CanPlaceAt(-1, type, position))
+    if (!CanPlaceAt(-1, subType, position))
     {
         fprintf(stderr, "[Ruang] Tidak bisa menempatkan: area terhalang atau di luar ruangan\n");
         gState.titleDirty = true;
@@ -228,7 +254,7 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     newPos.x = Clamp(newPos.x, -kRoomSize, kRoomSize);
     newPos.z = Clamp(newPos.z, -kRoomSize, kRoomSize);
 
-    if (!CanPlaceAt(gState.selectedObjectIndex, selected->type, newPos))
+    if (!CanPlaceAt(gState.selectedObjectIndex, selected->subType, newPos))
     {
         fprintf(stderr, "[Ruang] Tidak bisa geser: area terhalang\n");
         gState.titleDirty = true;
@@ -242,21 +268,31 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
 //  Collision detection
 // ---------------------------------------------------------------------------
 
-void GetBounds(const ObjectType type, float &halfX, float &halfZ)
+void GetBounds(const ObjectSubType subType,
+               float &halfX, float &halfZ, float &halfY)
 {
-    switch (type)
+    switch (subType)
     {
-    case ObjectType::CUBE:     halfX = 1.0f; halfZ = 1.0f; break;
-    case ObjectType::CYLINDER: halfX = 0.7f; halfZ = 0.7f; break;
-    case ObjectType::ROAD:     halfX = 3.0f; halfZ = 1.5f; break;
-    default:                   halfX = 0.5f; halfZ = 0.5f; break;
+    case ObjectSubType::MEJA:        halfX=1.00f; halfZ=0.60f; halfY=1.00f; break;
+    case ObjectSubType::SOFA:        halfX=1.10f; halfZ=0.45f; halfY=0.75f; break;
+    case ObjectSubType::KURSI:       halfX=0.50f; halfZ=0.50f; halfY=1.00f; break;
+    case ObjectSubType::LEMARI:      halfX=0.70f; halfZ=0.28f; halfY=2.40f; break;
+    case ObjectSubType::RAK:         halfX=0.65f; halfZ=0.18f; halfY=1.40f; break;
+    case ObjectSubType::MEJA_BUNDAR: halfX=0.75f; halfZ=0.75f; halfY=1.04f; break;
+    case ObjectSubType::LAMPU:       halfX=0.22f; halfZ=0.22f; halfY=1.33f; break;
+    case ObjectSubType::KARPET:      halfX=1.50f; halfZ=1.00f; halfY=0.04f; break;
+    case ObjectSubType::TIKAR:       halfX=1.00f; halfZ=0.60f; halfY=0.02f; break;
+    case ObjectSubType::KIPAS:       halfX=0.12f; halfZ=0.12f; halfY=0.15f; break;
+    default:
+        // Fallback to legacy ObjectType-based — gunakan subType NONE
+        halfX=0.50f; halfZ=0.50f; halfY=0.50f; break;
     }
 }
 
-bool CanPlaceAt(const int excludeIndex, const ObjectType type, const Vec3 position)
+bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType, const Vec3 position)
 {
-    float hw, hd;
-    GetBounds(type, hw, hd);
+    float hw, hd, hh;
+    GetBounds(subType, hw, hd, hh);
 
     // Boundary check
     if (position.x - hw < -kRoomSize || position.x + hw > kRoomSize) return false;
@@ -268,8 +304,8 @@ bool CanPlaceAt(const int excludeIndex, const ObjectType type, const Vec3 positi
         if (i == excludeIndex) continue;
 
         const SceneObject &other = gSceneObjects[i];
-        float ohw, ohd;
-        GetBounds(other.type, ohw, ohd);
+        float ohw, ohd, ohh;
+        GetBounds(other.subType, ohw, ohd, ohh);
 
         if (position.x - hw < other.position.x + ohw &&
             position.x + hw > other.position.x - ohw &&
@@ -417,5 +453,79 @@ const char *GetSubTypeLabel(const ObjectSubType subType)
     case ObjectSubType::TIKAR:       return "Tikar";
     case ObjectSubType::KIPAS:       return "Kipas";
     default:                         return "Objek";
+    }
+}
+
+void PickObjectAtMouse(const int screenX, const int screenY)
+{
+    if (gState.activeMode != AppMode::EDIT_ORTHO) return;
+    if (gState.gameState != GameState::PLAYING) return;
+
+    // Set up ortho projection matrix (same as ConfigureProjectionMatrix for EDIT_ORTHO)
+    const float aspect = (gWindowHeight == 0)
+                             ? 1.0f
+                             : static_cast<float>(gWindowWidth) / static_cast<float>(gWindowHeight);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(-kOrthoSize * aspect, kOrthoSize * aspect,
+            -kOrthoSize, kOrthoSize, -100.0, 100.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    gluLookAt(0.0, 24.0, 0.0,
+              0.0,  0.0, 0.0,
+              0.0,  0.0, -1.0);
+
+    // Get matrices for unproject
+    GLdouble modelview[16], projection[16];
+    GLint viewport[4];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // Restore matrices
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    // GLUT Y is top-down, OpenGL viewport Y is bottom-up
+    const double winY = static_cast<double>(viewport[3]) - static_cast<double>(screenY);
+
+    GLdouble nearX, nearY, nearZ, farX, farY, farZ;
+    gluUnProject(static_cast<double>(screenX), winY, 0.0,
+                 modelview, projection, viewport,
+                 &nearX, &nearY, &nearZ);
+    gluUnProject(static_cast<double>(screenX), winY, 1.0,
+                 modelview, projection, viewport,
+                 &farX, &farY, &farZ);
+
+    // Intersect ray with plane y=0
+    // P = near + t*(far-near), find t where y=0
+    const double dy = farY - nearY;
+    if (std::abs(dy) < 0.000001) return;
+    const double t = -nearY / dy;
+    const double worldX = nearX + t * (farX - nearX);
+    const double worldZ = nearZ + t * (farZ - nearZ);
+
+    // Iterate in reverse (topmost object last in array = highest index)
+    for (int i = static_cast<int>(gSceneObjects.size()) - 1; i >= 0; --i)
+    {
+        const SceneObject &obj = gSceneObjects[i];
+        float hx, hz, hy;
+        GetBounds(obj.subType, hx, hz, hy);
+
+        if (worldX >= static_cast<double>(obj.position.x - hx) &&
+            worldX <= static_cast<double>(obj.position.x + hx) &&
+            worldZ >= static_cast<double>(obj.position.z - hz) &&
+            worldZ <= static_cast<double>(obj.position.z + hz))
+        {
+            gState.selectedObjectIndex = i;
+            gState.titleDirty = true;
+            break;
+        }
     }
 }

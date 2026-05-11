@@ -237,12 +237,23 @@ void MouseButton(int button, int state, int x, int y)
         gState.isDragging = true;
         gState.lastMouseX = x;
         gState.lastMouseY = y;
+        gState.mouseDownX = x;
+        gState.mouseDownY = y;
         glutSetCursor(GLUT_CURSOR_INFO);
     }
     else if (state == GLUT_UP)
     {
         gState.isDragging = false;
         glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+
+        // Distinguish click vs drag: if movement < 5px → treat as click
+        const int dx = x - gState.mouseDownX;
+        const int dy = y - gState.mouseDownY;
+        if (dx * dx + dy * dy < 25)
+        {
+            PickObjectAtMouse(x, y);
+            glutPostRedisplay();
+        }
     }
 }
 
@@ -288,6 +299,9 @@ void MouseDrag(int x, int y)
 
 void Idle()
 {
+    // Update global animation time
+    gAnimTime += 0.016f;  // ~60 FPS assumption
+
     // Dirty title flag — rebuild window title once per frame if needed
     if (gState.titleDirty)
     {

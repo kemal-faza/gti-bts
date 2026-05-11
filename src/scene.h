@@ -106,6 +106,8 @@ struct AppState
     bool depthTestEnabled = true;
     int lastMouseX = 0;
     int lastMouseY = 0;
+    int mouseDownX = 0;
+    int mouseDownY = 0;
     bool titleDirty = true;
     GameState gameState = GameState::MENU;
     int currentLevel = 0;
@@ -132,6 +134,7 @@ extern float gViewDistance;
 extern std::vector<SceneObject> gSceneObjects;
 extern std::vector<LevelData> gLevels;
 extern bool gKeyDown[256];
+extern float gAnimTime;
 
 // ---------------------------------------------------------------------------
 //  Constants
@@ -169,8 +172,9 @@ void AddSceneObject(ObjectType type, ObjectSubType subType,
                     float rotationY, int cost);
 void AddNewObjectInEditMode();
 void MoveSelectedObject(float deltaX, float deltaZ);
-void GetBounds(ObjectType type, float &halfX, float &halfZ);
-bool CanPlaceAt(int excludeIndex, ObjectType type, Vec3 position);
+void GetBounds(ObjectSubType subType, float &halfX, float &halfZ, float &halfY);
+bool CanPlaceAt(int excludeIndex, ObjectSubType subType, Vec3 position);
+void PickObjectAtMouse(int screenX, int screenY);
 
 void InitializeLevels();
 const LevelData &GetCurrentLevel();

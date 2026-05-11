@@ -91,11 +91,12 @@ void ApplyObjectMaterial(const MaterialType material, const bool selected)
         shininess   = 96.0f;
     }
 
-    if (selected && gState.activeMode == AppMode::EDIT_ORTHO)
+    if (selected)
     {
-        emission[0] = 0.12f;
-        emission[1] = 0.12f;
-        emission[2] = 0.22f;
+        // Stronger emission highlight untuk semua mode
+        emission[0] = 0.25f;
+        emission[1] = 0.25f;
+        emission[2] = 0.45f;
     }
 
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,   ambient);
@@ -406,11 +407,23 @@ static void DrawLamp()
     DrawCylinderPrimitive(0.035f, 1.00f);
     glPopMatrix();
 
-    // Shade
+    // Shade — dengan emission glow berdenyut
+    const float glow = 0.3f + 0.2f * std::sin(gAnimTime * 2.5f);
+    const GLfloat ambient[]  = {0.15f, 0.10f, 0.05f, 1.0f};
+    const GLfloat diffuse[]  = {0.80f, 0.60f, 0.30f, 1.0f};
+    const GLfloat emission[] = {glow, glow * 0.6f, glow * 0.2f, 1.0f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
+
     glPushMatrix();
     glTranslatef(0.0f, 1.13f, 0.0f);
     DrawCylinderPrimitive(0.18f, 0.20f);
     glPopMatrix();
+
+    // Reset emission
+    const GLfloat noEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, noEmission);
 }
 
 static void DrawCarpet()
@@ -439,10 +452,11 @@ static void DrawCeilingFan()
     DrawCylinderPrimitive(0.12f, 0.15f);
     glPopMatrix();
 
-    // Blades
+    // Blades — berputar terus berdasarkan anim time
+    const float spinAngle = std::fmod(gAnimTime * 120.0f, 360.0f);
     for (int i = 0; i < 3; ++i)
     {
-        float angle = static_cast<float>(i) * 120.0f;
+        float angle = static_cast<float>(i) * 120.0f + spinAngle;
         glPushMatrix();
         glRotatef(angle, 0.0f, 1.0f, 0.0f);
         glTranslatef(0.5f, -0.02f, 0.0f);
@@ -594,22 +608,26 @@ void DrawRoom()
 
         const float h = 3.0f;
         glBegin(GL_QUADS);
-        // Back (z = -kRoomSize)
+        // Back (z = -kRoomSize) — normal menghadap +Z
+        glNormal3f(0.0f, 0.0f, 1.0f);
         glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
         glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, -kRoomSize);
         glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, -kRoomSize);
         glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, -kRoomSize);
-        // Front (z = +kRoomSize)
+        // Front (z = +kRoomSize) — normal menghadap -Z
+        glNormal3f(0.0f, 0.0f, -1.0f);
         glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, kRoomSize);
         glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, kRoomSize);
         glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, kRoomSize);
         glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, kRoomSize);
-        // Left (x = -kRoomSize)
+        // Left (x = -kRoomSize) — normal menghadap +X
+        glNormal3f(1.0f, 0.0f, 0.0f);
         glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
         glTexCoord2f(kRoomSize, 0.0f); glVertex3f(-kRoomSize, 0.0f, kRoomSize);
         glTexCoord2f(kRoomSize, h);    glVertex3f(-kRoomSize, h, kRoomSize);
         glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, -kRoomSize);
-        // Right (x = +kRoomSize)
+        // Right (x = +kRoomSize) — normal menghadap -X
+        glNormal3f(-1.0f, 0.0f, 0.0f);
         glTexCoord2f(0.0f, 0.0f);      glVertex3f( kRoomSize, 0.0f, -kRoomSize);
         glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, kRoomSize);
         glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, kRoomSize);
@@ -1058,6 +1076,71 @@ void RenderOverlay()
 }
 
 // ---------------------------------------------------------------------------
+//  Selection highlight — wireframe bounding box
+// ---------------------------------------------------------------------------
+
+static void DrawSelectionHighlight(const SceneObject &obj)
+{
+    float hx, hz, hy;
+    GetBounds(obj.subType, hx, hz, hy);
+
+    const bool wasLighting = glIsEnabled(GL_LIGHTING);
+    const bool wasTexture  = glIsEnabled(GL_TEXTURE_2D);
+    if (wasLighting) glDisable(GL_LIGHTING);
+    if (wasTexture)  glDisable(GL_TEXTURE_2D);
+
+    glPushMatrix();
+    glTranslatef(obj.position.x, obj.position.y, obj.position.z);
+
+    glLineWidth(3.5f);
+
+    // Pulse effect menggunakan sin terhadap waktu
+    const float pulse = 0.8f + 0.2f * std::sin(gAnimTime * 3.0f);
+    glColor4f(1.0f, 1.0f, 0.0f, pulse);
+
+    // Bottom face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-hx, 0.0f, -hz);
+    glVertex3f( hx, 0.0f, -hz);
+    glVertex3f( hx, 0.0f,  hz);
+    glVertex3f(-hx, 0.0f,  hz);
+    glEnd();
+
+    // Top face
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-hx, hy, -hz);
+    glVertex3f( hx, hy, -hz);
+    glVertex3f( hx, hy,  hz);
+    glVertex3f(-hx, hy,  hz);
+    glEnd();
+
+    // Vertical edges
+    glBegin(GL_LINES);
+    glVertex3f(-hx, 0.0f, -hz); glVertex3f(-hx, hy, -hz);
+    glVertex3f( hx, 0.0f, -hz); glVertex3f( hx, hy, -hz);
+    glVertex3f( hx, 0.0f,  hz); glVertex3f( hx, hy,  hz);
+    glVertex3f(-hx, 0.0f,  hz); glVertex3f(-hx, hy,  hz);
+    glEnd();
+
+    glLineWidth(1.0f);
+    glPopMatrix();
+
+    // Corner dots at bottom corners
+    glPointSize(6.0f);
+    glColor3f(1.0f, 0.8f, 0.0f);
+    glBegin(GL_POINTS);
+    glVertex3f(-hx, 0.0f, -hz);
+    glVertex3f( hx, 0.0f, -hz);
+    glVertex3f( hx, 0.0f,  hz);
+    glVertex3f(-hx, 0.0f,  hz);
+    glEnd();
+    glPointSize(1.0f);
+
+    if (wasLighting) glEnable(GL_LIGHTING);
+    if (wasTexture)  glEnable(GL_TEXTURE_2D);
+}
+
+// ---------------------------------------------------------------------------
 //  Display entry point
 // ---------------------------------------------------------------------------
 
@@ -1073,6 +1156,14 @@ void Display()
     DrawRoom();
     RenderShadows();
     DrawSceneObjects();
+
+    // Selection highlight
+    if (HasValidSelection() && gState.gameState == GameState::PLAYING)
+    {
+        const SceneObject &sel = *GetSelectedObject();
+        DrawSelectionHighlight(sel);
+    }
+
     DrawPointLightMarker();
 
     // Overlays and HUD depend on game state
