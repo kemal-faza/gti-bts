@@ -17,4 +17,6 @@ void DrawGrid();
 void DrawSceneObjects();
 void DrawPointLightMarker();
 
+void RenderHUD();
+void RenderOverlay();
 void Display();

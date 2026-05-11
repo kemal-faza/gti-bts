@@ -7,6 +7,7 @@
 #include <GL/glut.h>
 #include <cmath>
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 
 // =========================================================================
@@ -31,15 +32,36 @@ void Reshape(int width, int height)
 //  Keyboard — dispatch handlers
 // -------------------------------------------------------------------------
 
+static void StartLevel(int index)
+{
+    gState.currentLevel = index;
+    gState.gameState = GameState::PLAYING;
+    gState.activeMode = AppMode::EDIT_ORTHO;
+    gSceneObjects.clear();
+    glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+    gState.titleDirty = true;
+    glutPostRedisplay();
+}
+
 static bool HandleGlobalKeys(unsigned char key)
 {
     if (key == 27)                  // Esc
     {
-        std::exit(0);
+        if (gState.gameState == GameState::MENU)
+        {
+            std::exit(0);
+        }
+        // From PLAYING, WIN, LOSE — go back to menu
+        gState.gameState = GameState::MENU;
+        gState.titleDirty = true;
+        glutPostRedisplay();
+        return true;
     }
 
     if (key == '\t')                // Tab — toggle mode
     {
+        if (gState.gameState != GameState::PLAYING) return true;
+
         if (gState.activeMode == AppMode::EDIT_ORTHO)
             gState.activeMode = AppMode::VIEW_PERSPECTIVE;
         else
@@ -51,6 +73,40 @@ static bool HandleGlobalKeys(unsigned char key)
         glutPostRedisplay();
         return true;
     }
+
+    if (key == '\r' || key == '\n') // Enter
+    {
+        if (gState.gameState == GameState::MENU)
+        {
+            StartLevel(0);
+            return true;
+        }
+        if (gState.gameState == GameState::PLAYING)
+        {
+            GameState result = EvaluateSubmission();
+            gState.gameState = result;
+            gState.titleDirty = true;
+            glutPostRedisplay();
+            return true;
+        }
+        if (gState.gameState == GameState::WIN)
+        {
+            // Next level (if not last)
+            int next = gState.currentLevel + 1;
+            if (next < static_cast<int>(gLevels.size()))
+                StartLevel(next);
+            else
+                gState.gameState = GameState::MENU;
+            return true;
+        }
+        if (gState.gameState == GameState::LOSE)
+        {
+            // Retry — restart current level
+            StartLevel(gState.currentLevel);
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -144,6 +200,9 @@ void KeyboardDown(unsigned char key, int, int)
     const unsigned char lowered = static_cast<unsigned char>(std::tolower(key));
     if (HandleGlobalKeys(key)) return;
 
+    // Edit/view keys only work during PLAYING
+    if (gState.gameState != GameState::PLAYING) return;
+
     if (gState.activeMode == AppMode::EDIT_ORTHO)
         HandleEditKeys(lowered);
     else
@@ -227,6 +286,9 @@ void Idle()
         gState.titleDirty = false;
     }
 
+    // Only process movement during PLAYING state
+    if (gState.gameState != GameState::PLAYING) return;
+
     bool changed = false;
     float deltaX = 0.0f;
     float deltaZ = 0.0f;
@@ -275,7 +337,9 @@ void Idle()
 
 void InitGL()
 {
-    InitializeSceneData();
+    InitializeLevels();
+    gState.gameState = GameState::MENU;
+    gState.currentLevel = 0;
 
     glClearColor(0.08f, 0.09f, 0.12f, 1.0f);
     ApplyDepthTestMode();

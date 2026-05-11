@@ -48,6 +48,14 @@ enum class ObjectSubType
     KIPAS
 };
 
+enum class GameState
+{
+    MENU,
+    PLAYING,
+    WIN,
+    LOSE
+};
+
 // ---------------------------------------------------------------------------
 //  Structs
 // ---------------------------------------------------------------------------
@@ -67,6 +75,21 @@ struct SceneObject
     MaterialType material;
 };
 
+struct LevelRequirement
+{
+    ObjectType type;
+    int count;
+};
+
+struct LevelData
+{
+    int levelNumber;
+    const char *roomName;
+    const char *clientBrief;
+    std::vector<LevelRequirement> requiredItems;
+    int budget;
+};
+
 struct AppState
 {
     AppMode activeMode = AppMode::VIEW_PERSPECTIVE;
@@ -79,6 +102,10 @@ struct AppState
     int lastMouseX = 0;
     int lastMouseY = 0;
     bool titleDirty = true;
+    GameState gameState = GameState::MENU;
+    int currentLevel = 0;
+    int totalSpent = 0;
+    int finalScore = 0;
 };
 
 // ---------------------------------------------------------------------------
@@ -97,6 +124,7 @@ extern float gViewPitchDeg;
 extern float gViewDistance;
 
 extern std::vector<SceneObject> gSceneObjects;
+extern std::vector<LevelData> gLevels;
 extern bool gKeyDown[256];
 
 // ---------------------------------------------------------------------------
@@ -135,3 +163,8 @@ void AddSceneObject(ObjectType type, MaterialType material, Vec3 position, float
 void InitializeSceneData();
 void AddNewObjectInEditMode();
 void MoveSelectedObject(float deltaX, float deltaZ);
+
+int  GetObjectCost(ObjectType type);
+void InitializeLevels();
+const LevelData &GetCurrentLevel();
+GameState EvaluateSubmission();

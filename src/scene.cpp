@@ -1,5 +1,6 @@
 #include "scene.h"
 
+#include <cstdio>
 #include <cmath>
 
 // ---------------------------------------------------------------------------
@@ -18,6 +19,7 @@ float gViewPitchDeg  = 0.0f;
 float gViewDistance  = 18.0f;
 
 std::vector<SceneObject> gSceneObjects;
+std::vector<LevelData> gLevels;
 bool gKeyDown[256] = {false};
 
 // ---------------------------------------------------------------------------
@@ -205,4 +207,129 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     selected->position.x += deltaX;
     selected->position.z += deltaZ;
     ClampSelectedObject();
+}
+
+// ---------------------------------------------------------------------------
+//  Game system — level data + submission
+// ---------------------------------------------------------------------------
+
+int GetObjectCost(const ObjectType type)
+{
+    switch (type)
+    {
+    case ObjectType::CUBE:     return 10;
+    case ObjectType::CYLINDER: return 8;
+    case ObjectType::ROAD:     return 5;
+    }
+    return 0;
+}
+
+void InitializeLevels()
+{
+    gLevels.clear();
+
+    {
+        LevelData lv;
+        lv.levelNumber = 1;
+        lv.roomName     = "Ruang Tamu";
+        lv.clientBrief  = "Klien: Pasangan muda menginginkan ruang tamu minimalis.\n"
+                          "Wajib: 2 sofa, 1 meja, 1 karpet.\n"
+                          "Budget: 50";
+        lv.budget       = 50;
+        lv.requiredItems = {
+            {ObjectType::CUBE, 2},
+            {ObjectType::ROAD, 1}
+        };
+        gLevels.push_back(lv);
+    }
+    {
+        LevelData lv;
+        lv.levelNumber = 2;
+        lv.roomName     = "Ruang Makan";
+        lv.clientBrief  = "Klien: Keluarga 4 orang.\n"
+                          "Wajib: 1 meja bundar, 4 kursi.\n"
+                          "Budget: 60";
+        lv.budget       = 60;
+        lv.requiredItems = {
+            {ObjectType::CYLINDER, 1},
+            {ObjectType::CUBE, 4}
+        };
+        gLevels.push_back(lv);
+    }
+    {
+        LevelData lv;
+        lv.levelNumber = 3;
+        lv.roomName     = "Kamar Tidur";
+        lv.clientBrief  = "Klien: Mahasiswa kos.\n"
+                          "Wajib: 1 lemari, 1 lampu, 1 karpet.\n"
+                          "Budget: 45";
+        lv.budget       = 45;
+        lv.requiredItems = {
+            {ObjectType::CUBE, 1},
+            {ObjectType::CYLINDER, 1},
+            {ObjectType::ROAD, 1}
+        };
+        gLevels.push_back(lv);
+    }
+}
+
+const LevelData &GetCurrentLevel()
+{
+    return gLevels[gState.currentLevel];
+}
+
+GameState EvaluateSubmission()
+{
+    // Hitung total cost
+    int spent = 0;
+    for (const auto &obj : gSceneObjects)
+        spent += GetObjectCost(obj.type);
+    gState.totalSpent = spent;
+
+    const LevelData &level = GetCurrentLevel();
+
+    // Cek tiap requirement: count objek dengan type tertentu
+    char failReason[256] = {0};
+
+    for (const auto &req : level.requiredItems)
+    {
+        int count = 0;
+        for (const auto &obj : gSceneObjects)
+        {
+            if (obj.type == req.type) ++count;
+        }
+        if (count < req.count)
+        {
+            std::snprintf(failReason, sizeof(failReason),
+                          "Kurang item. Butuh %d dari tipe tertentu.", req.count - count);
+            break;
+        }
+    }
+
+    // Win/lose decision
+    bool allMet = true;
+    for (const auto &req : level.requiredItems)
+    {
+        int count = 0;
+        for (const auto &obj : gSceneObjects)
+            if (obj.type == req.type) ++count;
+        if (count < req.count) { allMet = false; break; }
+    }
+
+    if (!allMet)
+    {
+        gState.finalScore = 0;
+        return GameState::LOSE;
+    }
+
+    if (spent > level.budget)
+    {
+        gState.finalScore = 0;
+        return GameState::LOSE;
+    }
+
+    // WIN — hitung score sederhana
+    int scoreBudget = (spent <= level.budget) ? 50 : 0;
+    gState.finalScore = 50 + scoreBudget;  // 50 basic + 50 budget = max 100
+    return GameState::WIN;
 }
