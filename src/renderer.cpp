@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "texture.h"
 #include "ui.h"
 
 #include <GL/gl.h>
@@ -149,6 +150,7 @@ void DrawCylinderPrimitive(const float radius, const float height)
     if (quad == nullptr) return;
 
     gluQuadricNormals(quad, GLU_SMOOTH);
+    gluQuadricTexture(quad, GL_TRUE);
 
     glPushMatrix();
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
@@ -166,12 +168,69 @@ void DrawCylinderPrimitive(const float radius, const float height)
     gluDeleteQuadric(quad);
 }
 
+// ---------------------------------------------------------------------------
+//  Textured primitive helpers
+// ---------------------------------------------------------------------------
+
+static void DrawTexturedCube(const float size)
+{
+    const float h = size * 0.5f;
+    glBegin(GL_QUADS);
+
+    // Front
+    glTexCoord2f(0, 0); glVertex3f(-h, -h,  h);
+    glTexCoord2f(1, 0); glVertex3f( h, -h,  h);
+    glTexCoord2f(1, 1); glVertex3f( h,  h,  h);
+    glTexCoord2f(0, 1); glVertex3f(-h,  h,  h);
+
+    // Back
+    glTexCoord2f(0, 0); glVertex3f( h, -h, -h);
+    glTexCoord2f(1, 0); glVertex3f(-h, -h, -h);
+    glTexCoord2f(1, 1); glVertex3f(-h,  h, -h);
+    glTexCoord2f(0, 1); glVertex3f( h,  h, -h);
+
+    // Top
+    glTexCoord2f(0, 0); glVertex3f(-h,  h,  h);
+    glTexCoord2f(1, 0); glVertex3f( h,  h,  h);
+    glTexCoord2f(1, 1); glVertex3f( h,  h, -h);
+    glTexCoord2f(0, 1); glVertex3f(-h,  h, -h);
+
+    // Bottom
+    glTexCoord2f(0, 0); glVertex3f(-h, -h, -h);
+    glTexCoord2f(1, 0); glVertex3f( h, -h, -h);
+    glTexCoord2f(1, 1); glVertex3f( h, -h,  h);
+    glTexCoord2f(0, 1); glVertex3f(-h, -h,  h);
+
+    // Right
+    glTexCoord2f(0, 0); glVertex3f( h, -h,  h);
+    glTexCoord2f(1, 0); glVertex3f( h, -h, -h);
+    glTexCoord2f(1, 1); glVertex3f( h,  h, -h);
+    glTexCoord2f(0, 1); glVertex3f( h,  h,  h);
+
+    // Left
+    glTexCoord2f(0, 0); glVertex3f(-h, -h, -h);
+    glTexCoord2f(1, 0); glVertex3f(-h, -h,  h);
+    glTexCoord2f(1, 1); glVertex3f(-h,  h,  h);
+    glTexCoord2f(0, 1); glVertex3f(-h,  h, -h);
+
+    glEnd();
+}
+
 void DrawObjectGeometry(const SceneObject &obj)
 {
+    // Bind texture if available
+    GLuint tex = GetTextureForSubType(obj.subType);
+    if (tex != 0)
+    {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    }
+
     switch (obj.type)
     {
     case ObjectType::CUBE:
-        glutSolidCube(2.0);
+        DrawTexturedCube(2.0f);
         break;
 
     case ObjectType::CYLINDER:
@@ -180,9 +239,12 @@ void DrawObjectGeometry(const SceneObject &obj)
 
     case ObjectType::ROAD:
         glScalef(6.0f, 0.24f, 3.0f);
-        glutSolidCube(1.0f);
+        DrawTexturedCube(1.0f);
         break;
     }
+
+    if (tex != 0)
+        glDisable(GL_TEXTURE_2D);
 }
 
 // ---------------------------------------------------------------------------

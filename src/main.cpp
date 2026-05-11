@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "renderer.h"
+#include "texture.h"
 #include "ui.h"
 
 #include <GL/gl.h>
@@ -340,6 +341,8 @@ void InitGL()
     InitializeLevels();
     gState.gameState = GameState::MENU;
     gState.currentLevel = 0;
+
+    InitTextures();
 
     glClearColor(0.08f, 0.09f, 0.12f, 1.0f);
     ApplyDepthTestMode();
