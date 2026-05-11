@@ -7,40 +7,32 @@ Aplikasi memiliki dua mode utama:
 - `EDIT`: untuk membuat dan menata objek pada bidang datar.
 - `VIEW`: untuk inspeksi scene 3D dengan preset kamera perspektif.
 
+## Struktur Project
+
+```
+gti-bts/
+├── src/                     ← source code
+├── build/                   ← output binary (gitignored)
+├── assets/                  ← tekstur, gambar
+├── docs/                    ← dokumentasi, rencana
+│   ├── PLAN.md
+│   ├── AGENTS.md
+│   └── README.md            ← (file ini)
+└── .gitignore
+```
+
 ## Build dan Run
 
-Contoh compile di Linux:
-
+**Linux:**
 ```bash
-g++ main.cpp -o main -lGL -lGLU -lglut
-./main
+g++ src/*.cpp -o build/main -lGL -lGLU -lglut
+./build/main
 ```
 
-Contoh compile di Windows (MSYS2 UCRT64, disarankan):
-
-1. Install MSYS2 dari https://www.msys2.org/.
-2. Buka terminal `MSYS2 UCRT64`, lalu install toolchain dan freeglut:
-
+**Windows (MSYS2 UCRT64):**
 ```bash
-pacman -S --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-freeglut
-```
-
-3. Masuk ke folder project lalu compile:
-
-```bash
-g++ main.cpp -o main.exe -lfreeglut -lopengl32 -lglu32
-```
-
-4. Jalankan aplikasi:
-
-```bash
-./main.exe
-```
-
-Alternatif (MinGW-w64 standalone di CMD/PowerShell) command compile umumnya sama:
-
-```bash
-g++ main.cpp -o main.exe -lfreeglut -lopengl32 -lglu32
+g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32
+./build/main.exe
 ```
 
 ## Kontrol

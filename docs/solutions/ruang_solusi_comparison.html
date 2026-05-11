@@ -1,0 +1,287 @@
+
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.wrap { padding: 1rem 0; font-size: 14px; color: var(--color-text-primary); }
+h2 { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+.sub { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 20px; }
+.problem { margin-bottom: 28px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.problem-header { padding: 10px 14px; background: var(--color-background-secondary); display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.badge { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.badge-red { background: var(--color-background-danger); color: var(--color-text-danger); }
+.badge-amber { background: var(--color-background-warning); color: var(--color-text-warning); }
+.badge-blue { background: var(--color-background-info); color: var(--color-text-info); }
+.badge-green { background: var(--color-background-success); color: var(--color-text-success); }
+.problem-title { font-weight: 500; font-size: 14px; flex: 1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { padding: 7px 12px; text-align: left; font-weight: 500; font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+tbody td { padding: 9px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); vertical-align: top; line-height: 1.5; }
+tbody tr:last-child td { border-bottom: none; }
+.tag-existing { font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); white-space: nowrap; display: inline-block; margin-bottom: 4px; }
+.tag-new { font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--color-background-info); color: var(--color-text-info); border: 0.5px solid var(--color-border-tertiary); white-space: nowrap; display: inline-block; margin-bottom: 4px; }
+.tag-rec { font-size: 11px; padding: 1px 6px; border-radius: 3px; background: var(--color-background-success); color: var(--color-text-success); border: 0.5px solid var(--color-border-tertiary); white-space: nowrap; display: inline-block; margin-bottom: 4px; }
+.verdict { padding: 8px 12px; font-size: 12px; color: var(--color-text-secondary); border-top: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); line-height: 1.6; }
+.verdict strong { color: var(--color-text-primary); font-weight: 500; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.dot-good { background: #1D9E75; }
+.dot-bad { background: #E24B4A; }
+</style>
+<div class="wrap">
+<h2>Perbandingan Solusi — Proyek Ruang</h2>
+<p class="sub">Label <span class="tag-existing">ada di AGENTS.md</span> = solusi yang sudah diusulkan · <span class="tag-new">alternatif baru</span> = solusi tambahan · <span class="tag-rec">rekomendasi</span> = pilihan terbaik</p>
+
+<!-- Masalah 0 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-red">Masalah 0 🔴</span>
+    <span class="problem-title">Win/Lose Condition untuk Room Builder</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Pendekatan</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Interior Designer (budget + brief)</td>
+        <td>Klien fiktif minta layout tertentu. Win = semua furnitur terpasang & cost ≤ budget.</td>
+        <td><span class="dot dot-good"></span>Paling natural untuk room builder<br><span class="dot dot-good"></span>Ada angka objektif (budget)</td>
+        <td><span class="dot dot-bad"></span>Perlu sistem harga per objek<br><span class="dot dot-bad"></span>Budget gate terasa arbitrary</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Time-Attack</td>
+        <td>Timer mundur, harus selesaikan layout sebelum waktu habis.</td>
+        <td><span class="dot dot-good"></span>Tekanan dramatis, mudah diimplementasi</td>
+        <td><span class="dot dot-bad"></span>Bertentangan dengan vibe santai room builder<br><span class="dot dot-bad"></span>Kurang edukatif</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Puzzle Tetris</td>
+        <td>Semua furnitur harus muat di ruangan tanpa overlap. Win = semua terpasang.</td>
+        <td><span class="dot dot-good"></span>Cocok dengan collision detection<br><span class="dot dot-good"></span>Win condition jelas</td>
+        <td><span class="dot dot-bad"></span>Kurang eksplorasi kreatif<br><span class="dot dot-bad"></span>Lebih mirip puzzle daripada desain</td>
+      </tr>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-new"></span><span class="tag-rec">rekomendasi</span><br>Renovation Challenge</td>
+        <td>Ada "klien" dengan requirement bertahap (fase 1: living room, fase 2: bedroom, dst). Tiap fase unlock furnitur baru. Win = semua fase selesai sesuai checklist minimal.</td>
+        <td><span class="dot dot-good"></span>Progression alami = animasi fly-in antar-fase<br><span class="dot dot-good"></span>Checklist = UI yang jelas<br><span class="dot dot-good"></span>Tidak memaksakan urgency</td>
+        <td><span class="dot dot-bad"></span>Perlu desain fase & checklist konten<br><span class="dot dot-bad"></span>Sedikit lebih banyak state management</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Narasi Animasi (storyline)</td>
+        <td>Tidak dibuat game, tapi jadikan "Animasi" per spec: kamera fly-through otomatis di akhir menampilkan ruangan yang sudah didesain. Win = pengguna happy, bukan kalah/menang.</td>
+        <td><span class="dot dot-good"></span>Paling sesuai esensi room builder<br><span class="dot dot-good"></span>Spec animasi terpenuhi sekaligus<br><span class="dot dot-good"></span>Tidak perlu rombak konsep</td>
+        <td><span class="dot dot-bad"></span>Tidak memenuhi spec "game"<br><span class="dot dot-bad"></span>Perlu klarifikasi ke dosen dulu</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> Pakai <strong>Renovation Challenge</strong> jika harus ada game win/lose. Atau ajukan ke dosen apakah <strong>Animasi (storyline)</strong> bisa menggantikan requirement game — itu jalur paling clean secara teknis dan kreatif.</div>
+</div>
+
+<!-- Masalah 1 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-amber">Masalah 1</span>
+    <span class="problem-title">Implementasi Tekstur</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Library</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>stb_image.h</td>
+        <td>Single-header, drop-in. Load PNG/JPG, bind ke GL_TEXTURE_2D, pakai GL_MODULATE.</td>
+        <td><span class="dot dot-good"></span>Nol dependensi tambahan<br><span class="dot dot-good"></span>Sangat ringan (~1100 baris header)</td>
+        <td><span class="dot dot-bad"></span>Tidak ada mipmapping otomatis<br><span class="dot dot-bad"></span>Harus generate UV manual</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>SOIL</td>
+        <td>Simple OpenGL Image Library — lebih high-level dari stb, punya SOIL_load_OGL_texture().</td>
+        <td><span class="dot dot-good"></span>Satu fungsi langsung load + bind + mipmap</td>
+        <td><span class="dot dot-bad"></span>Dependensi tambahan, kurang dirawat<br><span class="dot dot-bad"></span>Perlu setup build sistem</td>
+      </tr>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-new"></span><span class="tag-rec">rekomendasi</span><br>stb_image.h + gluBuild2DMipmaps()</td>
+        <td>Pakai stb_image untuk load, tapi ganti glTexImage2D dengan gluBuild2DMipmaps() yang sudah built-in di GLU — otomatis generate semua mip level.</td>
+        <td><span class="dot dot-good"></span>Nol dependensi baru (GLU sudah ada)<br><span class="dot dot-good"></span>Kualitas tekstur jauh lebih baik<br><span class="dot dot-good"></span>GL_MODULATE tetap bisa dipakai</td>
+        <td><span class="dot dot-bad"></span>Sedikit lebih verbose dari SOIL</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Procedural texture (tanpa file)</td>
+        <td>Generate pola checker/noise di CPU sebagai array pixel, upload ke GPU. Tidak perlu load file sama sekali.</td>
+        <td><span class="dot dot-good"></span>Tidak ada file aset, portable<br><span class="dot dot-good"></span>Cocok untuk demo/penilaian</td>
+        <td><span class="dot dot-bad"></span>Terlihat kurang realistis<br><span class="dot dot-bad"></span>Perlu implementasi noise/pattern sendiri</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> stb_image.h + gluBuild2DMipmaps() adalah sweet spot — tidak tambah dependensi, hasil bagus. Untuk material glossy/rough yang sudah ada, GL_MODULATE cukup (multiply tekstur × material color). Jika mau roughness terasa, gunakan GL_DECAL untuk roughness dan GL_MODULATE untuk glossy — cukup satu baris glTexEnvf() berbeda per mode.</div>
+</div>
+
+<!-- Masalah 2 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-amber">Masalah 2</span>
+    <span class="problem-title">Implementasi Bayangan (Shadow)</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Teknik</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-existing"></span><span class="tag-rec">rekomendasi</span><br>Projective shadow (stencil)</td>
+        <td>Render objek kedua kali via matrix proyeksi ke lantai. Pakai stencil buffer agar tidak overflow keluar area lantai.</td>
+        <td><span class="dot dot-good"></span>100% fixed-function OpenGL 1.x<br><span class="dot dot-good"></span>~30 baris kode tambahan<br><span class="dot dot-good"></span>Cocok dengan directional light yang sudah ada</td>
+        <td><span class="dot dot-bad"></span>Hanya lantai datar<br><span class="dot dot-bad"></span>Shadow tidak jatuh ke dinding/objek lain</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Shadow mapping (glCopyTexImage2D)</td>
+        <td>Render depth dari perspektif lampu, simpan ke texture, bandingkan saat render utama.</td>
+        <td><span class="dot dot-good"></span>Shadow realistis, jatuh ke semua permukaan</td>
+        <td><span class="dot dot-bad"></span>Butuh shader untuk perbandingan depth<br><span class="dot dot-bad"></span>Tidak praktis di OpenGL 1.x fixed-function<br><span class="dot dot-bad"></span>Perlu FBO atau glCopyTexImage2D (error-prone)</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Fake blob shadow</td>
+        <td>Render ellipse gelap semi-transparan di bawah tiap objek, scaled berdasarkan posisi Y objek terhadap lantai.</td>
+        <td><span class="dot dot-good"></span>Sangat mudah (~10 baris per objek)<br><span class="dot dot-good"></span>Cukup convincing untuk presentasi<br><span class="dot dot-good"></span>Nol kompleksitas matrix</td>
+        <td><span class="dot dot-bad"></span>Tidak mengikuti arah cahaya<br><span class="dot dot-bad"></span>Terlihat "game lama", bukan realistis</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Projective + point light approximation</td>
+        <td>Projective shadow dengan dua pass: satu untuk LIGHT0 (directional), satu untuk LIGHT1 (point). Shadow di-blend dengan glBlendFunc.</td>
+        <td><span class="dot dot-good"></span>Masih fixed-function<br><span class="dot dot-good"></span>Dua shadow terlihat lebih kaya</td>
+        <td><span class="dot dot-bad"></span>Dua kali render objek = perlu optimasi<br><span class="dot dot-bad"></span>Blending bisa ada artefak transparansi</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> Projective shadow dengan <strong>stencil buffer</strong> adalah pilihan terbaik untuk OpenGL 1.x. Shadow mapping membutuhkan shader (GLSL), yang tidak tersedia di stack fixed-function ini. Blob shadow bisa jadi fallback cepat jika waktu terbatas. Formula matrix proyeksi ke lantai (y=0): M = [[lz,0,-lx,0],[0,lz,0,0],[0,0,lz,0],[0,0,0,lz]] dari light position (lx,ly,lz).</div>
+</div>
+
+<!-- Masalah 3 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-blue">Masalah 3</span>
+    <span class="problem-title">Animasi Minimal</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Pendekatan</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Kamera fly-in + objek lerp (jatuh dari atas)</td>
+        <td>Saat masuk VIEW mode, kamera lerp dari posisi editor ke posisi preset. Objek baru ditambah dari Y tinggi, lerp ke Y target.</td>
+        <td><span class="dot dot-good"></span>Natural, tidak memaksakan animasi<br><span class="dot dot-good"></span>Mudah diimplementasi dengan glutTimerFunc</td>
+        <td><span class="dot dot-bad"></span>Mungkin tidak dianggap "animasi" oleh spec<br><span class="dot dot-bad"></span>Tidak ada timeline eksplisit</td>
+      </tr>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-new"></span><span class="tag-rec">rekomendasi</span><br>Auto-showcase fly-through</td>
+        <td>Tekan tombol (misal P) → kamera otomatis terbang mengitari ruangan via waypoints yang di-lerp. Loop sampai tekan lagi. Ini bisa di-pitch ke dosen sebagai "animasi presentasi".</td>
+        <td><span class="dot dot-good"></span>Jelas terlihat sebagai animasi<br><span class="dot dot-good"></span>Ada timeline eksplisit (waypoints)<br><span class="dot dot-good"></span>Berguna secara praktis untuk presentasi</td>
+        <td><span class="dot dot-bad"></span>Perlu desain jalur waypoints<br><span class="dot dot-bad"></span>Harus handle kamera override saat fly-through aktif</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Animasi objek in-world (jam, pintu, kipas)</td>
+        <td>Beberapa objek spesifik punya animasi looping: jarum jam berputar, pintu bisa dibuka, kipas berputar via rotasi terus-menerus.</td>
+        <td><span class="dot dot-good"></span>Memenuhi spec animasi dengan jelas<br><span class="dot dot-good"></span>Memperkaya tampilan scene<br><span class="dot dot-good"></span>Mudah: glRotatef(angle, ...) dengan angle di-increment tiap frame</td>
+        <td><span class="dot dot-bad"></span>Perlu tambah jenis objek baru<br><span class="dot dot-bad"></span>Butuh penanda visual agar animasi terlihat jelas</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> Kombinasi — <strong>fly-through showcase</strong> (untuk spec animasi kamera) + <strong>satu objek animasi sederhana seperti kipas</strong> (untuk spec animasi objek). Ini solid dan mudah dijelaskan ke dosen. Implementasikan dengan glutTimerFunc(16, ...) untuk ~60fps update loop.</div>
+</div>
+
+<!-- Masalah 4 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-blue">Masalah 4</span>
+    <span class="problem-title">Collision Detection & Boundary</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Pendekatan</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-existing"></span><span class="tag-rec">rekomendasi</span><br>AABB (Axis-Aligned Bounding Box)</td>
+        <td>Tiap objek punya min/max XZ. Saat placement, cek semua pasangan: if (aMin &lt; bMax && aMax &gt; bMin) → collision. Tolak penempatan.</td>
+        <td><span class="dot dot-good"></span>Sangat cepat O(n²) untuk n kecil<br><span class="dot dot-good"></span>Trivial implementasi<br><span class="dot dot-good"></span>Cukup akurat untuk furnitur kotak</td>
+        <td><span class="dot dot-bad"></span>Kurang akurat untuk objek bulat (kursi, meja bundar)<br><span class="dot dot-bad"></span>Rotasi objek = AABB membesar, over-reject</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Bounding cylinder</td>
+        <td>Objek bulat pakai silinder bounding: distance(centerA, centerB) &lt; rA+rB.</td>
+        <td><span class="dot dot-good"></span>Lebih akurat untuk objek melingkar<br><span class="dot dot-good"></span>Rotation-invariant (tidak terpengaruh rotasi)</td>
+        <td><span class="dot dot-bad"></span>Kurang akurat untuk objek persegi panjang<br><span class="dot dot-bad"></span>Perlu dua sistem (AABB + cylinder)</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>OBB (Oriented Bounding Box) via SAT</td>
+        <td>Seperti AABB tapi ikut rotasi objek. Gunakan Separating Axis Theorem: cek proyeksi di 4 sumbu (2 per objek). Overlap di semua sumbu = collision.</td>
+        <td><span class="dot dot-good"></span>Akurat meski objek dirotasi<br><span class="dot dot-good"></span>Tidak over-reject seperti AABB rotasi</td>
+        <td><span class="dot dot-bad"></span>Lebih kompleks implementasi<br><span class="dot dot-bad"></span>Mungkin overkill untuk proyek ini</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Grid-based spatial hashing</td>
+        <td>Bagi lantai menjadi grid sel (misal 1×1 unit). Tiap sel tahu objek mana yang menempatinya. Collision check hanya pada sel yang sama dan tetangga.</td>
+        <td><span class="dot dot-good"></span>O(1) average lookup, skalabel<br><span class="dot dot-good"></span>Juga bisa dipakai untuk snapping ke grid</td>
+        <td><span class="dot dot-bad"></span>Perlu maintain hash map<br><span class="dot dot-bad"></span>Kompleksitas lebih tinggi dari AABB sederhana</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> Mulai dengan <strong>AABB saja</strong> — untuk proyek akademik ini sudah cukup. Untuk objek silindris (kursi, meja bundar), pakai bounding cylinder khusus. Jika perlu rotasi, bungkus AABB dengan padding tambahan 10-15% daripada implementasi OBB penuh. Boundary ruangan cukup dengan clamp posisi ke min/max XZ saat drag.</div>
+</div>
+
+<!-- Masalah 5 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-blue">Masalah 5</span>
+    <span class="problem-title">Game State Machine & UI</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Pendekatan</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-existing"></span><span class="tag-rec">rekomendasi</span><br>GLUT bitmap font overlay</td>
+        <td>glRasterPos2f + glutBitmapCharacter untuk teks 2D. Simpan state sebagai enum: MENU, PLAYING, WIN, LOSE.</td>
+        <td><span class="dot dot-good"></span>Zero dependensi, sudah tersedia di GLUT<br><span class="dot dot-good"></span>Cukup untuk teks HUD sederhana</td>
+        <td><span class="dot dot-bad"></span>Hanya font bitmap bawaan, tidak bisa resize<br><span class="dot dot-bad"></span>Tidak bisa render teks non-ASCII (misal karakter Indonesia)</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Teks via tekstur atlas (DIY)</td>
+        <td>Buat texture 256×256 berisi karakter ASCII. Render quad dengan UV untuk tiap huruf. Bisa custom font, bisa scaled.</td>
+        <td><span class="dot dot-good"></span>Font bisa custom dan di-scale<br><span class="dot dot-good"></span>Tidak tambah dependensi (pakai stb_image yang sudah ada)</td>
+        <td><span class="dot dot-bad"></span>Butuh pre-generate atlas texture<br><span class="dot dot-bad"></span>Kerja lebih dari GLUT bitmap font</td>
+      </tr>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>FTGL / Freetype</td>
+        <td>Library render font TTF ke OpenGL. Bisa load font sistem.</td>
+        <td><span class="dot dot-good"></span>Font indah, bisa TTF apapun<br><span class="dot dot-good"></span>Unicode support</td>
+        <td><span class="dot dot-bad"></span>Dependensi besar<br><span class="dot dot-bad"></span>Setup build lebih rumit</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> <strong>GLUT bitmap font</strong> untuk fase ini — cukup untuk HUD budget/checklist/skor. State machine cukup enum + switch-case di fungsi display(). Layar menu bisa berupa overlay quad gelap + teks, tidak perlu scene terpisah. Kalau mau lebih polish tanpa dependensi baru, pakai stb_truetype.h (sesuku dengan stb_image) untuk render font TTF ke texture atlas.</div>
+</div>
+
+<!-- Masalah 6 -->
+<div class="problem">
+  <div class="problem-header">
+    <span class="badge badge-green">Masalah 6</span>
+    <span class="problem-title">Arsitektur Single-File</span>
+  </div>
+  <table>
+    <thead><tr><th style="width:18%">Pendekatan</th><th style="width:32%">Cara kerja</th><th style="width:25%">Kelebihan</th><th style="width:25%">Kekurangan</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="tag-existing">ada di AGENTS.md</span><br>Split saat perlu (belum diputuskan)</td>
+        <td>Tunggu sampai file terlalu besar, baru split berdasarkan fungsionalitas.</td>
+        <td><span class="dot dot-good"></span>Tidak over-engineer sekarang</td>
+        <td><span class="dot dot-bad"></span>Refactor makin sulit kalau terlambat<br><span class="dot dot-bad"></span>Tidak ada guideline kapan "cukup besar"</td>
+      </tr>
+      <tr style="background: var(--color-background-success)">
+        <td><span class="tag-new"></span><span class="tag-rec">rekomendasi</span><br>Split sekarang, 4 file</td>
+        <td>main.cpp → main.cpp (GLUT callbacks) + renderer.cpp (draw calls) + scene.cpp (state objek) + ui.cpp (HUD/menu). Header masing-masing.</td>
+        <td><span class="dot dot-good"></span>893 baris sekarang → split logis sebelum bengkak<br><span class="dot dot-good"></span>Tiap fitur baru jelas masuk file mana<br><span class="dot dot-good"></span>Lebih mudah di-review oleh dosen/teman</td>
+        <td><span class="dot dot-bad"></span>Perlu waktu 1-2 jam refactor awal<br><span class="dot dot-bad"></span>Perlu update build command</td>
+      </tr>
+      <tr>
+        <td><span class="tag-new">alternatif baru</span><br>Single file + region comments</td>
+        <td>Tetap satu file, tapi bagi dengan komentar // === SECTION: RENDERER === dan IDE folding. Pakai Ctrl+F untuk navigasi.</td>
+        <td><span class="dot dot-good"></span>Nol effort refactor<br><span class="dot dot-good"></span>Build command tidak berubah</td>
+        <td><span class="dot dot-bad"></span>File akan bengkak ke 1500+ baris<br><span class="dot dot-bad"></span>Tidak ada enforcement separation of concerns</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict"><strong>Rekomendasi:</strong> Split sekarang ke <strong>4 file</strong> sebelum menambah fitur tekstur/shadow/animasi. Struktur minimal: main.cpp (GLUT init + callbacks), scene.h/.cpp (struct Object, scene graph, collision), renderer.h/.cpp (semua glXxx calls), ui.h/.cpp (HUD, menu, state machine). Build command jadi: g++ main.cpp scene.cpp renderer.cpp ui.cpp -o main -lGL -lGLU -lglut</div>
+</div>
+
+</div>

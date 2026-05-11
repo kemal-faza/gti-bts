@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruang - Win/Lose Condition Analysis</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.7;
+    margin: 40px;
+    background: #f4f7fb;
+    color: #222;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 40px;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+h1, h2, h3 {
+    color: #1f4fa3;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+}
+th {
+    background: #dfe9ff;
+}
+.codeblock {
+    background: #f0f0f0;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+.highlight {
+    background: #eef5ff;
+    border-left: 5px solid #1f4fa3;
+    padding: 16px;
+    margin: 20px 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Ruang — Win/Lose Condition Analysis</h1>
+
+<p>
+Dokumen ini membandingkan beberapa pendekatan gameplay dan win/lose condition
+untuk proyek <b>Ruang</b>, sebuah room builder berbasis OpenGL 1.x.
+</p>
+
+<h2>Alternatif Solusi</h2>
+
+<h3>1. Interior Designer</h3>
+<p>
+Player menerima brief desain ruangan dan harus memenuhi kebutuhan klien
+dengan budget tertentu.
+</p>
+
+<h3>2. Time Attack</h3>
+<p>
+Player harus menyelesaikan room sebelum timer habis.
+</p>
+
+<h3>3. Puzzle Fit</h3>
+<p>
+Semua furniture harus muat tanpa overlap.
+</p>
+
+<h3>4. Functional Room Validation ⭐</h3>
+<p>
+Ruangan harus fungsional:
+</p>
+
+<ul>
+<li>Kursi dekat meja</li>
+<li>Lampu menerangi area kerja</li>
+<li>Pintu tidak terhalang</li>
+<li>Tidak overlap</li>
+<li>Masih ada ruang bergerak</li>
+</ul>
+
+<div class="highlight">
+<b>Ini merupakan solusi yang paling direkomendasikan.</b>
+Karena paling sesuai dengan identitas proyek sebagai room builder.
+</div>
+
+<h3>5. Customer Satisfaction Score</h3>
+<p>
+Player mendapatkan skor berdasarkan estetika dan kenyamanan layout.
+</p>
+
+<h3>6. Progressive Level</h3>
+<p>
+Terdapat beberapa level ruangan dengan objective berbeda.
+</p>
+
+<h3>7. Utility Simulation</h3>
+<p>
+Furniture elektronik perlu terhubung ke sumber listrik.
+</p>
+
+<h2>Perbandingan Solusi</h2>
+
+<table>
+<tr>
+<th>Opsi</th>
+<th>Cocok untuk Room Builder</th>
+<th>Scope</th>
+<th>Gameplay</th>
+<th>Risiko</th>
+</tr>
+
+<tr>
+<td>Interior Designer</td>
+<td>★★★★☆</td>
+<td>Sedang</td>
+<td>Objective jelas</td>
+<td>Generic</td>
+</tr>
+
+<tr>
+<td>Time Attack</td>
+<td>★★☆☆☆</td>
+<td>Kecil</td>
+<td>Cepat & menegangkan</td>
+<td>Tidak natural</td>
+</tr>
+
+<tr>
+<td>Puzzle Fit</td>
+<td>★★☆☆☆</td>
+<td>Sedang</td>
+<td>Puzzle</td>
+<td>Kreativitas hilang</td>
+</tr>
+
+<tr>
+<td><b>Functional Validation</b></td>
+<td><b>★★★★★</b></td>
+<td>Sedang</td>
+<td><b>Sangat natural</b></td>
+<td><b>Butuh logic tambahan</b></td>
+</tr>
+
+<tr>
+<td>Satisfaction Score</td>
+<td>★★★☆☆</td>
+<td>Sedang</td>
+<td>Sandbox</td>
+<td>Scoring ambigu</td>
+</tr>
+
+<tr>
+<td>Progressive Level</td>
+<td>★★★★☆</td>
+<td>Besar</td>
+<td>Menarik</td>
+<td>Scope creep</td>
+</tr>
+
+<tr>
+<td>Utility Simulation</td>
+<td>★★★☆☆</td>
+<td>Besar</td>
+<td>Unik</td>
+<td>Overengineering</td>
+</tr>
+
+</table>
+
+<h2>Rekomendasi Final</h2>
+
+<div class="highlight">
+<h3>Functional Room Validation + Client Brief</h3>
+
+<p>
+Gabungkan objective dari klien dengan validasi layout ruangan.
+</p>
+
+<div class="codeblock">
+Level: Small Office
+
+Objectives:
+[✓] Place desk
+[✓] Place chair
+[✓] Add lighting
+[✓] No overlapping objects
+[✓] Keep door accessible
+
+Budget: $450 / $500
+STATUS: COMPLETE
+</div>
+
+</div>
+
+<h2>Kesimpulan</h2>
+
+<p>
+Pendekatan terbaik untuk proyek <b>Ruang</b> adalah mempertahankan identitasnya
+sebagai room builder, lalu menambahkan objective berbasis validasi layout.
+Dengan pendekatan ini, fitur seperti collision, lighting, UI, dan kamera menjadi
+memiliki tujuan gameplay yang jelas tanpa menghilangkan kreativitas pemain.
+</p>
+
+</div>
+</body>
+</html>
