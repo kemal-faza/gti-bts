@@ -185,7 +185,9 @@ static Mat4 GetNodeTransform(const json &node)
 static GLuint LoadGLTFTexture(const char *fullPath)
 {
     int w, h, channels;
-    unsigned char *data = stbi_load(fullPath, &w, &h, &channels, 0);
+    // Force RGBA loading (4 channels) — menangani PNG 1-channel (grayscale)
+    // yang sering dipakai glTF untuk alpha mask/floor textures
+    unsigned char *data = stbi_load(fullPath, &w, &h, &channels, 4);
     if (data == nullptr)
     {
         fprintf(stderr, "[glTF] Failed to load texture: %s\n", fullPath);
@@ -196,8 +198,8 @@ static GLuint LoadGLTFTexture(const char *fullPath)
     glGenTextures(1, &texID);
     glBindTexture(GL_TEXTURE_2D, texID);
 
-    const GLint  internalFormat = (channels == 4) ? GL_RGBA : GL_RGB;
-    const GLenum format         = (channels == 4) ? GL_RGBA : GL_RGB;
+    const GLint  internalFormat = GL_RGBA;
+    const GLenum format         = GL_RGBA;
 
     gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, w, h, format,
                       GL_UNSIGNED_BYTE, data);
@@ -276,7 +278,18 @@ static void WalkNodes(const json &doc,
                             p.baseColor[i] = bcf[i].get<float>();
                     }
 
-                    // ── Load baseColorTexture if available ──
+                }
+
+                if (p.skip)
+                {
+                    model.primitives.push_back(p);
+                    continue;
+                }
+
+                // ── Load baseColorTexture (only for non-skipped primitives) ──
+                if (matIdx >= 0 && matIdx < static_cast<int>(doc["materials"].size()))
+                {
+                    const json &mat = doc["materials"][matIdx];
                     if (mat.contains("pbrMetallicRoughness") &&
                         mat["pbrMetallicRoughness"].contains("baseColorTexture"))
                     {
@@ -292,12 +305,6 @@ static void WalkNodes(const json &doc,
                             }
                         }
                     }
-                }
-
-                if (p.skip)
-                {
-                    model.primitives.push_back(p);
-                    continue;
                 }
 
                 // --- Helper lambda: read accessor data ---
