@@ -259,8 +259,15 @@ void DrawPointLightMarker()
 //  UI overlay helpers
 // ---------------------------------------------------------------------------
 
+static GLboolean s_savedDepthTest  = GL_TRUE;
+static GLboolean s_savedLighting   = GL_TRUE;
+
 static void PushOverlayOrtho()
 {
+    // Save current state before drawing overlay
+    s_savedDepthTest = glIsEnabled(GL_DEPTH_TEST);
+    s_savedLighting  = glIsEnabled(GL_LIGHTING);
+
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
@@ -277,13 +284,22 @@ static void PushOverlayOrtho()
 
 static void PopOverlayOrtho()
 {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-
+    // Restore matrix stack
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
+    // Restore saved state (not force-enable)
+    if (s_savedDepthTest)
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_DEPTH_TEST);
+
+    if (s_savedLighting)
+        glEnable(GL_LIGHTING);
+    else
+        glDisable(GL_LIGHTING);
 }
 
 void RenderHUD()
@@ -418,10 +434,18 @@ void RenderOverlay()
                      GLUT_BITMAP_TIMES_ROMAN_24, " GAGAL ");
 
         SetColor(1.0f, 1.0f, 1.0f);
-        std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
-                      gState.totalSpent, GetCurrentLevel().budget);
-        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
-                     GLUT_BITMAP_HELVETICA_12, buf);
+        if (gState.failReason[0] != '\0')
+        {
+            RenderString(static_cast<float>(cx) - 140, static_cast<float>(cy) + 20,
+                         GLUT_BITMAP_HELVETICA_12, gState.failReason);
+        }
+        else
+        {
+            std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
+                          gState.totalSpent, GetCurrentLevel().budget);
+            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
+                         GLUT_BITMAP_HELVETICA_12, buf);
+        }
 
         SetColor(0.2f, 1.0f, 0.2f);
         RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 50,

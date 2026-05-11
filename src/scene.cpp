@@ -288,32 +288,25 @@ GameState EvaluateSubmission()
 
     const LevelData &level = GetCurrentLevel();
 
-    // Cek tiap requirement: count objek dengan type tertentu
-    char failReason[256] = {0};
+    // Satu loop: hitung requirement sekaligus cari penyebab gagal
+    bool allMet = true;
+    gState.failReason[0] = '\0';
 
     for (const auto &req : level.requiredItems)
     {
         int count = 0;
         for (const auto &obj : gSceneObjects)
-        {
             if (obj.type == req.type) ++count;
-        }
+
         if (count < req.count)
         {
-            std::snprintf(failReason, sizeof(failReason),
-                          "Kurang item. Butuh %d dari tipe tertentu.", req.count - count);
-            break;
+            allMet = false;
+            if (gState.failReason[0] == '\0')
+            {
+                std::snprintf(gState.failReason, sizeof(gState.failReason),
+                              "Item kurang: butuh %d lagi.", req.count - count);
+            }
         }
-    }
-
-    // Win/lose decision
-    bool allMet = true;
-    for (const auto &req : level.requiredItems)
-    {
-        int count = 0;
-        for (const auto &obj : gSceneObjects)
-            if (obj.type == req.type) ++count;
-        if (count < req.count) { allMet = false; break; }
     }
 
     if (!allMet)
@@ -325,11 +318,12 @@ GameState EvaluateSubmission()
     if (spent > level.budget)
     {
         gState.finalScore = 0;
+        std::snprintf(gState.failReason, sizeof(gState.failReason),
+                      "Budget melebihi: %d / %d", spent, level.budget);
         return GameState::LOSE;
     }
 
-    // WIN — hitung score sederhana
-    int scoreBudget = (spent <= level.budget) ? 50 : 0;
-    gState.finalScore = 50 + scoreBudget;  // 50 basic + 50 budget = max 100
+    // WIN
+    gState.finalScore = 100;
     return GameState::WIN;
 }

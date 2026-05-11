@@ -106,6 +106,7 @@ struct AppState
     int currentLevel = 0;
     int totalSpent = 0;
     int finalScore = 0;
+    char failReason[128] = {0};
 };
 
 // ---------------------------------------------------------------------------
