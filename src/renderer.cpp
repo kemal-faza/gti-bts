@@ -918,9 +918,6 @@ static void DrawSelectionHighlight(const SceneObject &obj)
     glVertex3f(-hx, 0.0f,  hz); glVertex3f(-hx, hy,  hz);
     glEnd();
 
-    glLineWidth(1.0f);
-    glPopMatrix();
-
     // Corner dots at bottom corners
     glPointSize(6.0f);
     glColor3f(1.0f, 0.8f, 0.0f);
@@ -931,6 +928,9 @@ static void DrawSelectionHighlight(const SceneObject &obj)
     glVertex3f(-hx, 0.0f,  hz);
     glEnd();
     glPointSize(1.0f);
+
+    glLineWidth(1.0f);
+    glPopMatrix();
 
     if (wasLighting) glEnable(GL_LIGHTING);
     if (wasTexture)  glEnable(GL_TEXTURE_2D);

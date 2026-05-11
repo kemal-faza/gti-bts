@@ -16,6 +16,8 @@ void LoadAllGLTFModels()
         {ObjectSubType::MEJA,        "assets/object/table",          2.0f},
         {ObjectSubType::LEMARI,      "assets/object/cabinet",        2.0f},
         {ObjectSubType::RAK,         "assets/object/shelf",          1.6f},
+        {ObjectSubType::KURSI,       "assets/object/chair",          1.0f},
+        {ObjectSubType::MEJA_BUNDAR, "assets/object/rounded-table",  1.5f},
         {ObjectSubType::LAMPU,       "assets/object/lamp",           1.5f},
         {ObjectSubType::KARPET,      "assets/object/carpet",         4.0f},
         {ObjectSubType::KIPAS,       "assets/object/fan",            1.0f},
