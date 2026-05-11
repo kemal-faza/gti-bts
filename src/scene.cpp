@@ -279,7 +279,7 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     newPos.x = Clamp(newPos.x, -kRoomSize, kRoomSize);
     newPos.z = Clamp(newPos.z, -kRoomSize, kRoomSize);
 
-    if (!CanPlaceAt(gState.selectedObjectIndex, selected->subType, newPos))
+    if (!CanPlaceAt(gState.selectedObjectIndex, selected->subType, newPos, selected->rotationY))
     {
         fprintf(stderr, "[Ruang] Tidak bisa geser: area terhalang\n");
         gState.titleDirty = true;
@@ -296,31 +296,65 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
 void GetBounds(const ObjectSubType subType,
                float &halfX, float &halfZ, float &halfY)
 {
-    switch (subType)
+    // Gunakan bounds dari glTF model jika tersedia
+    int idx = static_cast<int>(subType);
+    if (idx > 0 && idx < 16 && !gGLTFModels[idx].primitives.empty())
     {
-    case ObjectSubType::MEJA:        halfX=1.00f; halfZ=0.60f; halfY=1.00f; break;
-    case ObjectSubType::SOFA:        halfX=1.10f; halfZ=0.45f; halfY=0.75f; break;
-    case ObjectSubType::KURSI:       halfX=0.50f; halfZ=0.50f; halfY=1.00f; break;
-    case ObjectSubType::LEMARI:      halfX=0.70f; halfZ=0.28f; halfY=2.40f; break;
-    case ObjectSubType::RAK:         halfX=0.65f; halfZ=0.18f; halfY=1.40f; break;
-    case ObjectSubType::MEJA_BUNDAR: halfX=0.75f; halfZ=0.75f; halfY=1.04f; break;
-    case ObjectSubType::LAMPU:       halfX=0.22f; halfZ=0.22f; halfY=1.33f; break;
-    case ObjectSubType::KARPET:      halfX=1.50f; halfZ=1.00f; halfY=0.04f; break;
-    case ObjectSubType::KIPAS:       halfX=0.12f; halfZ=0.12f; halfY=0.15f; break;
-    default:
-        // Fallback to legacy ObjectType-based — gunakan subType NONE
-        halfX=0.50f; halfZ=0.50f; halfY=0.50f; break;
+        halfX = gGLTFModels[idx].boundsHalfX;
+        halfZ = gGLTFModels[idx].boundsHalfZ;
+        halfY = gGLTFModels[idx].boundsHalfY;
+        return;
     }
+
+    // Fallback untuk primitive types (CUBE, CYLINDER, ROAD)
+    halfX=0.50f; halfZ=0.50f; halfY=0.50f;
 }
 
-bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType, const Vec3 position)
+// ── Rotate AABB half-extents so collision respects object rotation ──
+static void GetRotatedBounds(float hx, float hz, float rotDeg,
+                              float &outHx, float &outHz)
+{
+    const float rad = rotDeg * (kPi / 180.0f);
+    const float c = std::cos(rad);
+    const float s = std::sin(rad);
+
+    // 4 corners of the AABB in local space
+    const float cx[4] = {-hx,  hx, -hx,  hx};
+    const float cz[4] = {-hz, -hz,  hz,  hz};
+
+    float minX = 1e9f, maxX = -1e9f;
+    float minZ = 1e9f, maxZ = -1e9f;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        float wx = cx[i] * c - cz[i] * s;
+        float wz = cx[i] * s + cz[i] * c;
+        if (wx < minX) minX = wx;
+        if (wx > maxX) maxX = wx;
+        if (wz < minZ) minZ = wz;
+        if (wz > maxZ) maxZ = wz;
+    }
+
+    outHx = (maxX - minX) * 0.5f;
+    outHz = (maxZ - minZ) * 0.5f;
+}
+
+bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType,
+                const Vec3 position, const float rotationY)
 {
     float hw, hd, hh;
     GetBounds(subType, hw, hd, hh);
 
-    // Boundary check
-    if (position.x - hw < -kRoomSize || position.x + hw > kRoomSize) return false;
-    if (position.z - hd < -kRoomSize || position.z + hd > kRoomSize) return false;
+    // Rotate the new object's bounds if it has a rotation
+    float rHw = hw, rHd = hd;
+    if (rotationY != 0.0f)
+        GetRotatedBounds(hw, hd, rotationY, rHw, rHd);
+
+    // Boundary check (use max extent of rotated footprint)
+    const float boundHw = (rHw > hw) ? rHw : hw;
+    const float boundHd = (rHd > hd) ? rHd : hd;
+    if (position.x - boundHw < -kRoomSize || position.x + boundHw > kRoomSize) return false;
+    if (position.z - boundHd < -kRoomSize || position.z + boundHd > kRoomSize) return false;
 
     // Collision check against all other objects
     for (int i = 0; i < static_cast<int>(gSceneObjects.size()); ++i)
@@ -331,10 +365,15 @@ bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType, const Vec3 
         float ohw, ohd, ohh;
         GetBounds(other.subType, ohw, ohd, ohh);
 
-        if (position.x - hw < other.position.x + ohw &&
-            position.x + hw > other.position.x - ohw &&
-            position.z - hd < other.position.z + ohd &&
-            position.z + hd > other.position.z - ohd)
+        // Rotate existing object's bounds if it has a rotation
+        float rOhw = ohw, rOhd = ohd;
+        if (other.rotationY != 0.0f)
+            GetRotatedBounds(ohw, ohd, other.rotationY, rOhw, rOhd);
+
+        if (position.x - rHw < other.position.x + rOhw &&
+            position.x + rHw > other.position.x - rOhw &&
+            position.z - rHd < other.position.z + rOhd &&
+            position.z + rHd > other.position.z - rOhd)
         {
             return false;
         }
@@ -541,10 +580,24 @@ void PickObjectAtMouse(const int screenX, const int screenY)
         float hx, hz, hy;
         GetBounds(obj.subType, hx, hz, hy);
 
-        if (worldX >= static_cast<double>(obj.position.x - hx) &&
-            worldX <= static_cast<double>(obj.position.x + hx) &&
-            worldZ >= static_cast<double>(obj.position.z - hz) &&
-            worldZ <= static_cast<double>(obj.position.z + hz))
+        // Transform click point to object's local space (inverse rotation)
+        double dx = worldX - static_cast<double>(obj.position.x);
+        double dz = worldZ - static_cast<double>(obj.position.z);
+        if (obj.rotationY != 0.0f)
+        {
+            const double rad = static_cast<double>(obj.rotationY) * (kPi / 180.0);
+            const double c = std::cos(rad);
+            const double s = std::sin(rad);
+            const double localX = dx * c + dz * s;
+            const double localZ = -dx * s + dz * c;
+            dx = localX;
+            dz = localZ;
+        }
+
+        if (dx >= -static_cast<double>(hx) &&
+            dx <=  static_cast<double>(hx) &&
+            dz >= -static_cast<double>(hz) &&
+            dz <=  static_cast<double>(hz))
         {
             gState.selectedObjectIndex = i;
             gState.titleDirty = true;

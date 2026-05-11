@@ -178,7 +178,7 @@ void AddSceneObject(ObjectType type, ObjectSubType subType,
 void AddNewObjectInEditMode();
 void MoveSelectedObject(float deltaX, float deltaZ);
 void GetBounds(ObjectSubType subType, float &halfX, float &halfZ, float &halfY);
-bool CanPlaceAt(int excludeIndex, ObjectSubType subType, Vec3 position);
+bool CanPlaceAt(int excludeIndex, ObjectSubType subType, Vec3 position, float rotationY = 0.0f);
 void PickObjectAtMouse(int screenX, int screenY);
 
 void InitializeLevels();

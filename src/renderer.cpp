@@ -259,7 +259,7 @@ void DrawObjectGeometry(const SceneObject &obj)
             glRotatef(spinAngle, 0.0f, 1.0f, 0.0f);
         }
 
-        DrawGLTFModel(gGLTFModels[idx]);
+        DrawGLTFModel(gGLTFModels[idx], s_shadowPass);
 
         // Reset emission after lamp
         if (obj.subType == ObjectSubType::LAMPU && !s_shadowPass)
@@ -567,7 +567,8 @@ void RenderShadows()
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
     glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);   // lantai flat — tidak perlu depth
+    glEnable(GL_DEPTH_TEST);    // depth test ON supaya stencil tidak bocor ke dinding
+    glDepthFunc(GL_LEQUAL);     // floor di y=0 sudah ada di depth buffer dari DrawRoom
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
@@ -885,6 +886,7 @@ static void DrawSelectionHighlight(const SceneObject &obj)
 
     glPushMatrix();
     glTranslatef(obj.position.x, obj.position.y, obj.position.z);
+    glRotatef(obj.rotationY, 0.0f, 1.0f, 0.0f);
 
     glLineWidth(3.5f);
 

@@ -577,20 +577,34 @@ bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize)
         }
     }
 
-    fprintf(stdout, "[glTF] Loaded %s: %zu primitives, scale=%.4f, offsetY=%.4f\n",
-            dirPath, outModel.primitives.size(), outModel.normalizeScale, outModel.offsetY);
+    // ── Compute final axis-aligned bounds (local space, after normalization) ──
+    outModel.boundsHalfX = (maxX - minX) * outModel.normalizeScale * 0.5f;
+    outModel.boundsHalfZ = (maxZ - minZ) * outModel.normalizeScale * 0.5f;
+    float finalMinY = minY * outModel.normalizeScale + outModel.offsetY;
+    float finalMaxY = maxY * outModel.normalizeScale + outModel.offsetY;
+    outModel.boundsHalfY = (finalMaxY - finalMinY) * 0.5f;
+
+    // Safety minimum — jangan sampai 0 agar collision tetap jalan
+    if (outModel.boundsHalfX < 0.01f) outModel.boundsHalfX = 0.5f;
+    if (outModel.boundsHalfZ < 0.01f) outModel.boundsHalfZ = 0.5f;
+    if (outModel.boundsHalfY < 0.01f) outModel.boundsHalfY = 0.5f;
+
+    fprintf(stdout, "[glTF] Loaded %s: %zu primitives, scale=%.4f, offsetY=%.4f, bounds=(%.2f, %.2f, %.2f)\n",
+            dirPath, outModel.primitives.size(), outModel.normalizeScale, outModel.offsetY,
+            outModel.boundsHalfX, outModel.boundsHalfY, outModel.boundsHalfZ);
 
     return true;
 }
 
-void DrawGLTFModel(const GLTFModel &model)
+void DrawGLTFModel(const GLTFModel &model, bool shadowMode)
 {
     for (const auto &prim : model.primitives)
     {
         if (prim.skip) continue;
 
-        // Set vertex color from material
-        glColor4fv(prim.baseColor);
+        // Set vertex color from material (skip during shadow pass so shadow stays black)
+        if (!shadowMode)
+            glColor4fv(prim.baseColor);
 
         if (!prim.indices.empty())
         {

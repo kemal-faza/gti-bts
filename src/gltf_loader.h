@@ -23,6 +23,11 @@ struct GLTFModel
     std::vector<GLTFPrimitive> primitives;
     float normalizeScale = 1.0f;
     float offsetY = 0.0f; // translation so model sits on y=0
+
+    // Axis-aligned half-extents in local space (computed after normalization)
+    float boundsHalfX = 0.5f;
+    float boundsHalfY = 0.5f;
+    float boundsHalfZ = 0.5f;
 };
 
 // ---------------------------------------------------------------------------
@@ -34,4 +39,5 @@ struct GLTFModel
 bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize);
 
 // Render a loaded glTF model using glBegin/glEnd with per-vertex color
-void DrawGLTFModel(const GLTFModel &model);
+// Set shadowMode=true during shadow pass to skip glColor4fv (so shadow stays black).
+void DrawGLTFModel(const GLTFModel &model, bool shadowMode = false);
