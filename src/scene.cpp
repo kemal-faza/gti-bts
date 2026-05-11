@@ -159,7 +159,7 @@ void AddNewObjectInEditMode()
     ObjectType type      = ObjectType::CUBE;
     ObjectSubType subType = ObjectSubType::MEJA;
     MaterialType material = MaterialType::GLOSSY;
-    int cost = 15;
+    int cost = 10;
     Vec3 position = {0.0f, 1.0f, 0.0f};
 
     if (SceneObject *selected = GetSelectedObject())
@@ -189,7 +189,7 @@ void AddNewObjectInEditMode()
         type     = ObjectType::CUBE;
         subType  = ObjectSubType::MEJA;
         material = MaterialType::GLOSSY;
-        cost     = 15;
+        cost     = 10;
         position.y = 1.0f;
     }
 

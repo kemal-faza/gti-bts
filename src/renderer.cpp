@@ -336,14 +336,26 @@ void RenderHUD()
             if (obj.type == req.type) ++count;
 
         char check = (count >= req.count) ? 'v' : ' ';
-        const char *label = "";
-        switch (req.type)
+        const char *label = nullptr;
+        for (const auto &so : gSceneObjects)
         {
-        case ObjectType::CUBE:     label = (req.count > 1) ? "kursi/sofa" : "meja/lemari"; break;
-        case ObjectType::CYLINDER: label = "meja/lampu";  break;
-        case ObjectType::ROAD:     label = "karpet";       break;
+            if (so.type == req.type)
+            {
+                label = GetSubTypeLabel(so.subType);
+                break;
+            }
         }
-        std::snprintf(buf, sizeof(buf), "[%c] %d %s", check, req.count, label);
+        if (label == nullptr)
+        {
+            switch (req.type)
+            {
+            case ObjectType::CUBE:     label = "Kotak";    break;
+            case ObjectType::CYLINDER: label = "Bulat";    break;
+            case ObjectType::ROAD:     label = "Datar";    break;
+            default:                   label = "Objek";    break;
+            }
+        }
+        std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
         RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_12, buf);
         lineY += 16;
