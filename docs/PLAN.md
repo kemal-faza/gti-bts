@@ -1,189 +1,189 @@
 # PLAN - GTI BTS: Interior Designer Simulator
 
-## 1. Analisis Kode Saat Ini vs Spesifikasi Proyek
+## 1. Status Implementasi vs Spesifikasi Proyek
 
-| Spesifikasi | Status | Catatan |
-|-------------|--------|---------|
-| a. Primitif Drawing | ✅ | `glutSolidCube`, `gluCylinder`+`gluDisk`, `glutSolidSphere`, `GL_LINES` |
-| b. Translasi & Rotasi | ✅ | `glTranslatef`/`glRotatef`, WASD move, orbit camera |
-| c. Proyeksi | ✅ | Ortho (top-down edit) + Perspektif (60° FOV) |
-| c. Animasi | ❌ | Belum ada sistem animasi |
-| d. Kamera | ✅ | 3 preset (1/2/3-point) + free orbit + ortho top-down |
-| d. Depth | ✅ | GL_DEPTH_TEST toggle (Z key) |
-| d. Lighting | ✅ | Directional (LIGHT0) + Point (LIGHT1) + material properties |
-| e. Tekstur | ❌ | Belum ada texture mapping |
-| e. Bayangan | ❌ | Belum ada shadow technique |
-| f. Interaksi Antar Objek | ❌ | Belum ada collision detection / interaksi |
-| Game: Start/Win/Lose | ❌ | Masih scene editor biasa |
+| Spesifikasi | Status | Detail Implementasi |
+|-------------|--------|---------------------|
+| a. Primitif Drawing | ✅ | `glBegin/glEnd` (glTF models), `DrawTexturedCube`, `gluCylinder`+`gluDisk`, `glutSolidSphere`, `GL_LINES` |
+| b. Translasi & Rotasi | ✅ | `glTranslatef`/`glRotatef`, WASD move, drag-to-move, Q/E rotate 15°, orbit camera |
+| c. Proyeksi | ✅ | Ortho (top-down edit) + Perspektif (60° FOV), Tab toggle |
+| c. Animasi | ✅ | Kipas berputar (`gAnimTime * 120°`), lamp glow pulse, **fly-through kamera** (8 waypoint orbit via tombol P) |
+| d. Kamera | ✅ | 3 preset (1/2/3-point) + free orbit + fly-through + ortho top-down |
+| d. Depth | ✅ | `GL_DEPTH_TEST`, toggle Z key |
+| d. Lighting | ✅ | Directional LIGHT0 + Point LIGHT1 + material ROUGH/GLOSSY, toggle L |
+| e. Tekstur | ✅ | `stb_image.h` + `gluBuild2DMipmaps` + `GL_MODULATE`. Floor, wall, glTF textures, procedural checker fallback. |
+| e. Bayangan | ✅ | Projective shadow + stencil buffer, `GL_LEQUAL` depth test, skip in edit mode |
+| f. Interaksi Antar Objek | ✅ | AABB collision (`CanPlaceAt`), rotation-aware (`GetRotatedBounds`), mouse pick, boundary clamp, drag-to-move |
+| **Game System** | ✅ | State machine `MENU → PLAYING → WIN/LOSE`, 3 level, scoring (0-100), HUD, overlay |
+
+### Fitur yang Sudah Dibangun
+
+| Fitur | Detail |
+|-------|--------|
+| **glTF Model Loader** | 9 model 3D (sofa, meja, lemari, rak, kursi, meja bundar, lampu, karpet, kipas) |
+| **ObjectSubType enum** | Membedakan varian furniture dalam ObjectType yang sama |
+| **Selection highlight** | Wireframe bounding box + pulse + corner dots + rotation-aware |
+| **Collision detection** | AABB pairwise check, rotation via `GetRotatedBounds`, boundary room |
+| **Delete object** | X key (atau Delete) untuk hapus objek terpilih |
+| **Auto-spawn kipas** | Kipas langit-langit muncul otomatis di setiap level |
+| **Scoring system** | Requirement (50) + Bonus (30) + Aesthetics (20) - Penalti |
+| **Bonus rules** | Proximity, AABB overlap, exclusion zone per level |
+| **Aesthetics heuristic** | Balance kiri-kanan + utilisasi ruangan |
+| **Penalty system** | -5 per placement gagal (cap 50) |
+| **Fly-through kamera** | Tombol P, 8 waypoint, smooth lerp, loop |
+| **glTF Texture** | Base color texture dari material glTF |
+| **White shadow fix** | `shadowMode` skip color emission |
+| **Model centering** | Auto-center X/Z setelah normalisasi |
 
 ## 2. Konsep Game: Interior Designer Simulator
 
 Pemain berperan sebagai desainer interior. Setiap level = proyek dari klien berbeda.
 
 ### Alur Gameplay
-1. **Start Condition**: Ruangan kosong + brief klien berisi:
-   - Item wajib yang harus ditempatkan
-   - Budget maksimal
-   - Aturan khusus (optional)
-2. **Gameplay**: Pemain menempatkan furniture (cube, cylinder, road) di dalam ruangan
-3. **Win Condition**: Semua item wajib terpenuhi + total cost ≤ budget
-4. **Lose Condition**: Total cost melebihi budget
+1. **Menu**: Layar start berisi brief klien + item wajib + budget
+2. **Gameplay**: Pemain menempatkan furniture (model 3D glTF) di dalam ruangan, rotasi, atur posisi
+3. **Submit**: Enter → evaluasi requirement + bonus + penalti
+4. **Win/Lose**: Tampilkan skor breakdown, lanjut/retry
 
-### Jenis Objek / Furniture (Mapping dari yang sudah ada)
+### Scoring System (0-100)
 
-| ObjectType Saat Ini | Furniture | Cost (contoh) |
-|---------------------|-----------|---------------|
-| CUBE (glossy) | Meja / Lemari / Rak | 15 |
-| CUBE (rough) | Sofa / Kursi | 10 |
-| CYLINDER | Meja Bundar / Lampu | 8 |
-| ROAD | Karpet / Tikar | 5 |
+| Komponen | Maks | Detail |
+|----------|------|--------|
+| Requirement Fulfillment | 50 | Semua item wajib harus terpasang |
+| Bonus Rules | 30 | +10 per rule, max 3 rules per level |
+| Aesthetics | 20 | Balance (0-10) + Utilization (0-10) |
+| Penalti | -50 | -5 per placement gagal, cap -50 |
 
-> **Catatan**: ObjectType dan material akan diperluas/direname sesuai perabotan.
+## 3. Yang Telah Ditambahkan / Diubah
 
-### Scoring System (Satisfaction Score 0-100)
+### 3.1 Tekstur ✅ (Selesai)
+- load gambar 2D dengan `stb_image.h`
+- mipmaps dengan `gluBuild2DMipmaps()`
+- `GL_MODULATE` untuk gabung tekstur × material
+- procedural checker texture sebagai fallback
+- wall texture + floor texture dengan repeat
+- glTF base color texture per primitive
 
-Final formula akan dievaluasi lebih lanjut, berikut draft awalnya:
+### 3.2 Bayangan ✅ (Selesai)
+- **Projective shadow + stencil buffer**: dua pass — render lantai ke stencil, render shadow di area stencil
+- `GL_LEQUAL` depth test agar shadow tidak bocor ke dinding
+- Shadow hanya di VIEW mode (skip di EDIT agar tidak ganggu)
+- Warna shadow hitam semi-transparan (0,0,0,0.10)
+- Skip `glColor4fv` di shadow pass agar shadow tetap hitam
 
-#### A. Requirement Fulfillment (50%)
-- Item wajib yang terpasang = lolos
-- Semua item wajib harus terpasang untuk win
-- Requirement fulfillment = (itemWajibTerpasang / totalItemWajib) × 50
-- Catatan: item opsional (benda tambahan tidak wajib, misal vas atau jam) berbeda dari Bonus Rules di bawah. Item opsional tidak mempengaruhi skor — hanya variasi visual.
+### 3.3 Animasi ✅ (Selesai)
+- **Fly-through kamera**: tombol P toggle, 8 waypoints orbit 360°, smoothstep lerp, looping
+- **Kipas langit-langit**: berputar via `glRotatef(angle)`, angle increment tiap frame
+- **Lampu glow**: emission pulsing via `sin(gAnimTime)`
 
-#### B. Penalti (mengurangi score, bukan prevent)
-- ~~Collision detection~~ → akan dicegah sistem, bukan scoring
-- Setiap percobaan place di posisi invalid = -poin kecil
+### 3.4 Interaksi Antar Objek ✅ (Selesai)
+- **AABB collision**: pairwise check saat placement, tolak jika overlap
+- **Rotation-aware**: `GetRotatedBounds()` compute rotated AABB dari 4 corner
+- **Boundary room**: clamp posisi ke ±kRoomSize
+- **Mouse pick**: unproject ray → y=0 plane → local-space inverse rotation AABB test
 
-#### C. Budget (sebagai gate, bukan scoring)
-- Total cost ≤ budget → lanjut
-- Total cost > budget → **LOSE**
-- Tidak ada reward dari sisa budget (agar pemain tetap termotivasi "berbelanja" tanpa merasa dihukum)
+### 3.5 Bonus Rules ✅ (Selesai)
 
-#### D. Aesthetics Heuristic (untuk menambah depth, bisa dipertimbangkan nanti)
-- Keseimbangan kiri-kanan
-- Jarak minimum antar objek
-- Utilisasi ruangan
+| Level | Rules | Max Bonus |
+|-------|-------|-----------|
+| 1 (Ruang Tamu) | Karpet di bawah meja (AABB overlap), Sofa dekat meja (< 4 unit) | 20 |
+| 2 (Ruang Makan) | Kursi dekat meja (< 2.5 unit), Kursi tidak menumpuk (> 1 unit) | 20 |
+| 3 (Kamar Tidur) | Lampu dekat lemari (< 3 unit), Pintu tidak terhalang (exclusion zone) | 20 |
 
-#### E. Bonus Objectives — Functional Rules (Opsional, Tidak Mempengaruhi Win/Lose)
+### 3.6 Game System ✅ (Selesai)
+- State machine: MENU → PLAYING → WIN / LOSE
+- Overlay WIN: score breakdown (requirement, bonus, aesthetics, penalti)
+- Overlay LOSE: penyebab gagal + retry
+- 3 level dengan brief klien berbeda
+- HUD: budget meter, checklist item, bonus rules, furniture selector
 
-Setiap level memiliki 1-3 aturan fungsional opsional yang menambah skor jika terpenuhi. Rules ini **tidak wajib** — pemain tetap menang meskipun tidak ada bonus yang terpenuhi.
+### 3.7 Refactor Objek ✅ (Selesai)
+- `ObjectSubType` enum: SOFA, MEJA, LEMARI, RAK, KURSI, MEJA_BUNDAR, LAMPU, KARPET, KIPAS
+- `SceneObject`: subType, cost, isAnimated
+- glTF model storage: `gGLTFModels[16]` indexed by ObjectSubType
 
-Contoh rules:
-- **Kursi dekat meja**: jarak antar pusat objek < 3 unit
-- **Karpet di bawah meja**: AABB karpet overlap dengan AABB meja
-- **Lampu dalam jangkauan**: jarak lampu ke furniture terdekat < 5 unit
-- **Pintu tidak terhalang**: tidak ada objek dalam exclusion zone 2×2 unit di area pintu
-- **Tidak overlap**: semua objek bebas collision antar sesama (sudah di-prevent oleh collision system, tinggal dicek)
+## 4. Level Design (Final)
 
-Tiap bonus terpenuhi = +10 skor. Maksimal bonus per level: 3 rules.
-Penalti placement invalid = -5 per percobaan (minimal 0, dihitung dari 5 percobaan pertama).
-Total skor: requirement (max 50) + bonus (max 30) + aesthetics (max 20) - penalti.
+| Level | Klien | Item Wajib | Budget | Bonus Rules |
+|-------|-------|-------------|--------|-------------|
+| 1 | Ruang Tamu | 2 sofa, 1 meja, 1 karpet | 50 | Meja di atas karpet (AABB overlap) + Sofa dekat meja (< 4 unit) |
+| 2 | Ruang Makan | 1 meja bundar, 4 kursi | 60 | Kursi dekat meja (< 2.5 unit) + Kursi tidak menumpuk (> 1 unit) |
+| 3 | Kamar Tidur | 1 lemari, 1 lampu, 1 karpet | 45 | Lampu dekat lemari (< 3 unit) + Pintu tidak terhalang (exclusion zone) |
 
-## 3. Yang Harus Ditambahkan / Diubah
+## 5. Kontrol (Final)
 
-### 3.1 Tekstur (e)
-- Load gambar 2D dengan **stb_image.h** (single-header, nol dependensi eksternal)
-- Generate mipmaps dengan **gluBuild2DMipmaps()** (built-in GLU, sudah di-link, nol dependensi baru — kualitas tekstur jauh lebih baik dari glTexImage2D biasa)
-- Texture coordinates untuk tiap face cube, cylinder, dan road
-- Gabung tekstur + material properties dengan **GL_MODULATE** (multiply tekstur × material color). Alternatif: GL_DECAL untuk efek berbeda tiap material type.
-- Procedural texture (checker/noise via CPU) sebagai fallback jika tidak ada file aset gambar
-
-### 3.2 Bayangan (e)
-- **Projective shadow + stencil buffer**: render objek kedua kali via matrix proyeksi ke lantai, gunakan stencil buffer agar shadow tidak overflow keluar area lantai. 100% fixed-function OpenGL 1.x.
-- **Shadow mapping tidak viable** — butuh shader (GLSL) untuk depth comparison, tidak tersedia di fixed-function pipeline. Coret dari pertimbangan.
-- **Blob shadow** sebagai fallback cepat jika waktu terbatas: ellipse gelap semi-transparan di bawah tiap objek, scaled berdasarkan posisi Y.
-- Catatan: bayangan hanya jatuh ke lantai datar (tidak ke dinding/objek lain) dengan metode projective.
-- **InitGL perlu diupdate**: `glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL)` dan aktifkan stencil test via `glEnable(GL_STENCIL_TEST)` + `glClearStencil(0)`.
-
-### 3.3 Animasi (c)
-- **Auto-showcase fly-through**: tombol P (di VIEW mode) memicu kamera terbang otomatis mengitari ruangan via waypoints yang di-lerp. Loop sampai tombol P ditekan lagi. Ada timeline eksplisit (waypoints) — jelas terlihat sebagai animasi oleh dosen.
-- **Satu objek animasi in-world**: kipas langit-langit berputar via `glRotatef(angle, 0,1,0)` dengan angle di-increment tiap frame di fungsi Idle. Implementasi ~10 baris.
-- Kipas = CYLINDER dengan flag `isAnimated = true` di SceneObject. Posisi Y diset ke langit-langit (~4.0f). Tidak perlu ObjectType baru — cukup properti boolean di struct.
-- Kipas **tidak ditempatkan pemain**, melainkan di-spawn otomatis saat level dimulai.
-- Kombinasi dua pendekatan ini solid untuk memenuhi spesifikasi: animasi kamera (fly-through) + animasi objek (kipas).
-- Implementasi: `glutTimerFunc(16, ...)` untuk ~60fps update loop.
-
-### 3.4 Interaksi Antar Objek (f)
-- **AABB (Axis-Aligned Bounding Box)**: tiap objek punya min/max XZ. Cek pairwise overlap saat placement — tolak jika collision.
-- **Padding 10-15%** pada AABB untuk mengakomodasi objek yang dirotasi (tanpa perlu implementasi OBB penuh).
-- Objek silindris (meja bundar, lampu): pakai **bounding cylinder khusus** — cek `distance(centerA, centerB) < rA + rB`.
-- Boundary ruangan: clamp posisi objek ke min/max XZ saat drag/placement.
-- OBB/SAT dan spatial hashing dipertimbangkan tapi **overkill** untuk proyek ini.
-
-### 3.5 Bonus Objectives / Functional Rules System
-
-- Dikerjakan **setelah** core features (tekstur, shadow, animasi, collision) selesai. Prioritas rendah — jika waktu terbatas bisa dilewati.
-- Struktur data tiap level: `std::vector<BonusRule>` dengan:
-  - `ruleType`: enum (PROXIMITY, OVERLAP, EXCLUSION_ZONE, WITHIN_RANGE)
-  - `targetObject`: tipe objek yang diharapkan (misal: CHAIR)
-  - `anchorObject`: tipe objek acuan (misal: TABLE) — null untuk EXCLUSION_ZONE
-  - `threshold`: jarak/area maksimal dalam unit world
-  - `description`: teks untuk ditampilkan di HUD
-- Evaluasi: jalankan semua rules saat pemain tekan Enter (submit). Rules yang terpenuhi ditampilkan checklist hijau di HUD.
-- Rules tidak mempengaruhi kemampuan pemain menempatkan objek — hanya scoring.
-
-### 3.6 Game System
-- State machine: START → PLAYING → WIN / LOSE
-- Setelah WIN: tampilkan overlay score, opsi "Next Level" (Enter) atau "Main Menu" (Esc)
-- Setelah LOSE: tampilkan overlay penyebab gagal, opsi "Retry" (Enter) atau "Main Menu" (Esc)
-- Level terakhir (3) → WIN menampilkan "Congratulations! All rooms complete."
-- Layar start (brief klien)
-- UI overlay: budget meter, checklist item, skor, bonus completion
-- Transisi antar level (minimal 3 level dengan klien berbeda)
-
-### 3.7 Refactor Objek
-- Rename/mapping ObjectType ke furniture yang relevan
-- Tambah data: cost, name, client requirements
-- Tambah properti `ObjectSubType subType` (enum) atau string `label` di SceneObject untuk membedakan varian dalam satu ObjectType — misal CYLINDER bisa jadi MEJA_BUNDAR, LAMPU, atau KIPAS.
-- Tambah flag `bool isAnimated` di SceneObject untuk menandai objek yang punya animasi looping (misal: kipas).
-
-## 4. Level Design (Draft)
-
-| Level | Klien | Item Wajib | Budget | Bonus Rules (Opsional) | Catatan |
-|-------|-------|-------------|--------|------------------------|---------|
-| 1 | Ruang Tamu | 2 sofa (cube rough), 1 meja (cube glossy), 1 karpet (road) | 50 | 1. Karpet di bawah meja (AABB overlap)<br>2. Sofa tidak jauh dari meja (jarak < 4 unit) | Tutorial |
-| 2 | Ruang Makan | 1 meja bundar (cyl), 4 kursi (cube rough) | 60 | 1. Kursi mengelilingi meja (jarak < 2.5 unit)<br>2. Kursi saling berjarak > 1 unit (tidak menumpuk) | Lebih banyak objek |
-| 3 | Kamar Tidur | 1 lemari (cube glossy), 1 lampu (cyl), 1 karpet (road) | 45 | 1. Lampu dekat lemari (< 3 unit)<br>2. Lemari tidak menghalangi pintu (exclusion zone) | Budget ketat |
-
-## 5. Kontrol (Rencana)
-
-| Tombol | Fungsi |
-|--------|--------|
-| Tab | Mode EDIT ↔ VIEW (sudah ada) |
-| WASD | Geser objek / kamera (sudah ada) |
-| Space | Place objek baru di posisi kursor (ubah dari AddNewObjectInEditMode) |
-| [/] | Select prev/next objek (sudah ada) |
-| Q/E | Naik/turunkan objek (belum, perlu ditambah di edit mode) |
-| Mouse Drag | Pindah objek (edit) / rotasi kamera (view) (sudah ada) |
-| L | Toggle directional light (sudah ada) |
-| F | Toggle smooth/flat shading (sudah ada) |
-| Z | Toggle depth test (sudah ada) |
-| P | Auto-showcase fly-through (VIEW mode) (baru) |
-| Enter | Submit / selesai dekorasi (baru) |
+| Tombol | Mode | Fungsi |
+|--------|------|--------|
+| Tab | Global | EDIT ↔ VIEW |
+| W A S D | EDIT | Geser objek terpilih |
+| W A S D | VIEW | Gerak target kamera |
+| Space | EDIT | Place objek baru |
+| [ / ] | EDIT | Select prev/next objek |
+| Q | EDIT | Rotasi objek -15° |
+| E | EDIT | Rotasi objek +15° |
+| X / Delete | EDIT | Hapus objek terpilih |
+| Mouse Drag | EDIT | Geser objek terpilih |
+| Mouse Drag | VIEW | Orbit kamera (yaw/pitch) |
+| 1/2/3 | VIEW | Preset kamera 1/2/3-point |
+| L | VIEW | Toggle directional light |
+| F | VIEW | Toggle smooth/flat shading |
+| Z | VIEW | Toggle depth test |
+| P | VIEW | Toggle fly-through kamera |
+| Enter | Global | Submit/Mulai/Ulang |
+| Esc | Global | Menu/Keluar |
 
 ## 6. Catatan Implementasi
 
-- **Tekstur**: `stb_image.h` untuk load + `gluBuild2DMipmaps()` untuk mipmap (built-in GLU). `GL_MODULATE` untuk gabung tekstur dengan material color.
-- **Shadow**: Projective shadow + stencil buffer. Glut display mode perlu `GLUT_STENCIL`. Shadow mapping **tidak viable** di OpenGL 1.x tanpa shaders.
-- **Animasi**: `glutTimerFunc(16, ...)` untuk update loop ~60fps. Fly-through waypoints: simpan array posisi kamera (Vec3), lerp antar waypoint di timer callback.
-- **Collision**: AABB dengan padding 10-15% untuk rotasi. Bounding cylinder khusus untuk objek silindris.
-- **Split arsitektur sebelum tambah fitur**: bagi `main.cpp` menjadi 4 file — `main.cpp` + `renderer.cpp/.h` + `scene.cpp/.h` + `ui.cpp/.h`. Build command diupdate.
-- **UI**: GLUT bitmap fonts untuk HUD (budget, checklist, skor). Opsi upgrade ke `stb_truetype.h` (satu keluarga dengan stb_image) jika ingin font lebih bagus tanpa dependensi baru.
-- **State game**: enum `GameState { MENU, PLAYING, WIN, LOSE }` ditambahkan di AppState.
-- **Layar menu**: cukup overlay quad gelap + teks GLUT bitmap, tidak perlu scene terpisah.
-- **Bonus rules**: diimplementasi setelah semua spesifikasi wajib (a-f) terpenuhi. Jika waktu sempit, cukup 1-2 rule paling simpel (proximity check antar dua objek).
+### Tekstur
+- `stb_image.h` untuk load, `gluBuild2DMipmaps()` untuk mipmap
+- `GL_MODULATE` untuk gabung tekstur dengan material color
+- Procedural checker texture sebagai fallback
 
-## 7. Urutan Pengerjaan
+### Shadow
+- Projective shadow + stencil buffer, two-pass rendering
+- `GLUT_STENCIL` di display mode, `glClearStencil(0)`
+- Directional light matrix proyeksi ke y=0
 
-Prioritas berdasarkan dependensi antar fitur dan spesifikasi wajib:
+### Collision
+- AABB pairwise check dengan rotation-aware bounds
+- 4 corner rotation: rotasi tiap titik AABB lalu hitung AABB baru
+- Boundary clamp ke ±kRoomSize
 
-| Urutan | Fitur | Alasan |
-|--------|-------|--------|
-| 1 | Split arsitektur: 4 file | Harus sebelum tambah fitur besar agar struktur kode rapi |
-| 2 | Game state machine + UI dasar | Dibutuhkan untuk flow start/win/lose dan overlay |
-| 3 | 3.7 Refactor objek (cost, name, subType) | Prasyarat untuk game system dan scoring |
-| 4 | 3.4 Collision detection (f) | Prasyarat untuk "tidak overlap" dan validasi placement |
-| 5 | 3.1 Tekstur (e) | Independen, bisa dikerjakan paralel dengan shadow |
-| 6 | 3.2 Bayangan (e) | Independen, bisa dikerjakan paralel dengan tekstur |
-| 7 | 3.3 Animasi (c) | Timer-based, bisa dikerjakan setelah view mode stabil |
-| 8 | 3.5 Bonus Objectives | Prioritas rendah — hanya jika waktu masih tersisa |
+### Scoring
+- Requirement = gate (semua wajib terpenuhi untuk WIN)
+- Bonus rules dievaluasi di `EvaluateSubmission()`
+- Aesthetics: balance (center of mass) + utilization (jumlah objek)
+- Penalti: counter placement gagal
+
+### Fly-through
+- 8 waypoints orbit 360° sekitar ruangan
+- Smoothstep interpolation antar waypoint
+- Looping, toggle via P key
+
+### Struktur File
+```
+src/
+├── main.cpp              — Entry point, GLUT callbacks, key handling
+├── renderer.cpp/.h       — Rendering: objects, room, grid, shadows, HUD, overlay
+├── scene.cpp/.h          — State, objects, collision, levels, scoring, fly-through
+├── texture.cpp/.h        — Texture loading + procedural generation
+├── ui.cpp/.h             — Text rendering, window title
+├── gltf_loader.cpp/.h    — glTF model parser + renderer
+├── json.hpp              — nlohmann/json (single-header)
+└── stb_image.h           — stb_image (single-header)
+```
+
+## 7. Riwayat Pengerjaan
+
+| # | Fitur | Status |
+|---|-------|--------|
+| 1 | Split arsitektur: 4+ file | ✅ Selesai |
+| 2 | Game state machine + UI | ✅ Selesai |
+| 3 | Refactor objek (subType, cost) | ✅ Selesai |
+| 4 | Collision detection | ✅ Selesai |
+| 5 | Tekstur (file + procedural) | ✅ Selesai |
+| 6 | Bayangan (projective + stencil) | ✅ Selesai |
+| 7 | Animasi (fly-through + kipas) | ✅ Selesai |
+| 8 | Bonus Rules + Scoring | ✅ Selesai |
+| 9 | glTF model loader | ✅ Selesai |
+| 10 | Delete object + auto-spawn kipas | ✅ Selesai |

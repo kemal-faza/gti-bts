@@ -83,6 +83,54 @@ float ToRadians(const float degree)
 }
 
 // ---------------------------------------------------------------------------
+//  Fly-through waypoints (camera orbit animation)
+// ---------------------------------------------------------------------------
+
+FlyWaypoint gFlyWaypoints[8] = {
+    {{ 0.0f,  5.0f, 18.0f}, {0.0f, 2.0f,  0.0f}},  // depan
+    {{14.0f,  6.0f, 14.0f}, {0.0f, 2.0f,  0.0f}},  // kanan+depan
+    {{18.0f,  7.0f,  0.0f}, {0.0f, 2.0f,  0.0f}},  // kanan
+    {{14.0f,  8.0f,-14.0f}, {0.0f, 2.0f,  0.0f}},  // kanan+belakang
+    {{ 0.0f,  9.0f,-18.0f}, {0.0f, 2.0f,  0.0f}},  // belakang
+    {{-14.0f, 8.0f,-14.0f}, {0.0f, 2.0f,  0.0f}},  // kiri+belakang
+    {{-18.0f, 7.0f,  0.0f}, {0.0f, 2.0f,  0.0f}},  // kiri
+    {{-14.0f, 6.0f, 14.0f}, {0.0f, 2.0f,  0.0f}},  // kiri+depan
+};
+const int gFlyWaypointCount = 8;
+
+void UpdateFlyThrough(float deltaT)
+{
+    if (!gState.isFlyThrough) return;
+
+    gState.flyThroughT += deltaT * 0.15f;  // ~8 detik per siklus
+    if (gState.flyThroughT >= static_cast<float>(gFlyWaypointCount))
+        gState.flyThroughT = 0.0f;  // loop
+
+    int idxA = static_cast<int>(gState.flyThroughT);
+    int idxB = (idxA + 1) % gFlyWaypointCount;
+    float t = gState.flyThroughT - static_cast<float>(idxA);
+
+    // Smoothstep
+    t = t * t * (3.0f - 2.0f * t);
+
+    const FlyWaypoint &a = gFlyWaypoints[idxA];
+    const FlyWaypoint &b = gFlyWaypoints[idxB];
+
+    // Lerp eye position
+    gViewTarget.x = a.target.x + t * (b.target.x - a.target.x);
+    gViewTarget.y = a.target.y + t * (b.target.y - a.target.y);
+    gViewTarget.z = a.target.z + t * (b.target.z - a.target.z);
+
+    // Lerp eye → compute yaw/pitch from that
+    float ex = a.eye.x + t * (b.eye.x - a.eye.x);
+    float ey = a.eye.y + t * (b.eye.y - a.eye.y);
+    float ez = a.eye.z + t * (b.eye.z - a.eye.z);
+
+    SetOrbitFromEyeTarget({ex, ey, ez}, gViewTarget);
+    gState.cameraPreset = CameraPreset::FREE;
+}
+
+// ---------------------------------------------------------------------------
 //  Selection helpers
 // ---------------------------------------------------------------------------
 
@@ -157,6 +205,30 @@ void SetPerspectivePreset(const CameraPreset preset)
 // ---------------------------------------------------------------------------
 //  Object management
 // ---------------------------------------------------------------------------
+
+void DeleteSelectedObject()
+{
+    if (!HasValidSelection()) return;
+    gSceneObjects.erase(gSceneObjects.begin() + gState.selectedObjectIndex);
+    if (gState.selectedObjectIndex >= static_cast<int>(gSceneObjects.size()))
+        gState.selectedObjectIndex = static_cast<int>(gSceneObjects.size()) - 1;
+    if (gSceneObjects.empty())
+        gState.selectedObjectIndex = 0;
+    gState.titleDirty = true;
+}
+
+void SpawnRotatingFan()
+{
+    SceneObject fan;
+    fan.type       = ObjectType::CYLINDER;
+    fan.subType    = ObjectSubType::KIPAS;
+    fan.material   = MaterialType::ROUGH;
+    fan.position   = {0.0f, 3.0f, 0.0f};
+    fan.rotationY  = 0.0f;
+    fan.cost       = 0;   // free, tidak mempengaruhi budget
+    fan.isAnimated = true;
+    gSceneObjects.push_back(fan);
+}
 
 void SelectAdjacentObject(const int direction)
 {
@@ -271,6 +343,7 @@ void AddNewObjectInEditMode()
     if (!CanPlaceAt(-1, subType, position))
     {
         fprintf(stderr, "[Ruang] Tidak bisa menempatkan: area terhalang atau di luar ruangan\n");
+        gState.penaltyCount++;
         gState.titleDirty = true;
         return;
     }
@@ -294,6 +367,7 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     if (!CanPlaceAt(gState.selectedObjectIndex, selected->subType, newPos, selected->rotationY))
     {
         fprintf(stderr, "[Ruang] Tidak bisa geser: area terhalang\n");
+        gState.penaltyCount++;
         gState.titleDirty = true;
         return;
     }
@@ -407,12 +481,19 @@ void InitializeLevels()
         lv.roomName     = "Ruang Tamu";
         lv.clientBrief  = "Klien: Pasangan muda menginginkan ruang tamu minimalis.\n"
                           "Wajib: 2 sofa, 1 meja, 1 karpet.\n"
+                          "Bonus: meja di atas karpet, sofa dekat meja.\n"
                           "Budget: 50";
         lv.budget       = 50;
         lv.requiredItems = {
             {ObjectType::CUBE, ObjectSubType::SOFA, 2},
             {ObjectType::CUBE, ObjectSubType::MEJA, 1},
             {ObjectType::ROAD, ObjectSubType::KARPET, 1}
+        };
+        lv.bonusRules = {
+            {BonusRuleType::OVERLAP_AABB, ObjectSubType::MEJA, ObjectSubType::KARPET, 0.0f,
+             "Karpet di bawah meja (AABB overlap)"},
+            {BonusRuleType::PROXIMITY, ObjectSubType::SOFA, ObjectSubType::MEJA, 4.0f,
+             "Sofa dekat meja (< 4 unit)"},
         };
         gLevels.push_back(lv);
     }
@@ -422,11 +503,18 @@ void InitializeLevels()
         lv.roomName     = "Ruang Makan";
         lv.clientBrief  = "Klien: Keluarga 4 orang.\n"
                           "Wajib: 1 meja bundar, 4 kursi.\n"
+                          "Bonus: kursi dekat meja, kursi tidak menumpuk.\n"
                           "Budget: 60";
         lv.budget       = 60;
         lv.requiredItems = {
             {ObjectType::CYLINDER, ObjectSubType::MEJA_BUNDAR, 1},
             {ObjectType::CUBE, ObjectSubType::KURSI, 4}
+        };
+        lv.bonusRules = {
+            {BonusRuleType::PROXIMITY, ObjectSubType::KURSI, ObjectSubType::MEJA_BUNDAR, 2.5f,
+             "Kursi mengelilingi meja (< 2.5 unit)"},
+            {BonusRuleType::WITHIN_RANGE, ObjectSubType::KURSI, ObjectSubType::KURSI, 1.0f,
+             "Kursi tidak menumpuk (> 1 unit antar kursi)"},
         };
         gLevels.push_back(lv);
     }
@@ -436,6 +524,7 @@ void InitializeLevels()
         lv.roomName     = "Kamar Tidur";
         lv.clientBrief  = "Klien: Mahasiswa kos.\n"
                           "Wajib: 1 lemari, 1 lampu, 1 karpet.\n"
+                          "Bonus: lampu dekat lemari, pintu tidak terhalang.\n"
                           "Budget: 45";
         lv.budget       = 45;
         lv.requiredItems = {
@@ -443,9 +532,158 @@ void InitializeLevels()
             {ObjectType::CYLINDER, ObjectSubType::LAMPU, 1},
             {ObjectType::ROAD, ObjectSubType::KARPET, 1}
         };
+        lv.bonusRules = {
+            {BonusRuleType::PROXIMITY, ObjectSubType::LAMPU, ObjectSubType::LEMARI, 3.0f,
+             "Lampu dekat lemari (< 3 unit)"},
+            {BonusRuleType::EXCLUSION_ZONE, ObjectSubType::NONE, ObjectSubType::NONE, 1.5f,
+             "Pintu tidak terhalang (zona 3x3 di (7,-7))"},
+        };
+        lv.bonusRules.back().zoneX = 7.0f;
+        lv.bonusRules.back().zoneZ = -7.0f;
         gLevels.push_back(lv);
     }
 }
+
+// ---------------------------------------------------------------------------
+//  Bonus rule checking helpers
+// ---------------------------------------------------------------------------
+
+static float ObjectCenterDistance(const SceneObject &a, const SceneObject &b)
+{
+    float dx = a.position.x - b.position.x;
+    float dz = a.position.z - b.position.z;
+    return std::sqrt(dx * dx + dz * dz);
+}
+
+static bool AABBOverlap(const SceneObject &a, const SceneObject &b)
+{
+    float ax, az, ay, bx, bz, by;
+    GetBounds(a.subType, ax, az, ay);
+    GetBounds(b.subType, bx, bz, by);
+    // Use max extent to account for rotation
+    float rax = ax, raz = az, rbx = bx, rbz = bz;
+    if (a.rotationY != 0.0f) GetRotatedBounds(ax, az, a.rotationY, rax, raz);
+    if (b.rotationY != 0.0f) GetRotatedBounds(bx, bz, b.rotationY, rbx, rbz);
+    return (a.position.x - rax < b.position.x + rbx &&
+            a.position.x + rax > b.position.x - rbx &&
+            a.position.z - raz < b.position.z + rbz &&
+            a.position.z + raz > b.position.z - rbz);
+}
+
+static int CountOfSubType(ObjectSubType subType)
+{
+    int c = 0;
+    for (const auto &obj : gSceneObjects)
+        if (obj.subType == subType) ++c;
+    return c;
+}
+
+bool CheckBonusRule(const BonusRule &rule)
+{
+    switch (rule.type)
+    {
+    case BonusRuleType::PROXIMITY:
+    {
+        // Find closest pair of (target, anchor)
+        float bestDist = 1e9f;
+        for (const auto &objA : gSceneObjects)
+        {
+            if (objA.subType != rule.target) continue;
+            for (const auto &objB : gSceneObjects)
+            {
+                if (objB.subType != rule.anchor) continue;
+                if (&objA == &objB) continue;
+                float d = ObjectCenterDistance(objA, objB);
+                if (d < bestDist) bestDist = d;
+            }
+        }
+        // If WITHIN_RANGE with same type, we check spacing
+        if (rule.target == rule.anchor)
+            return bestDist > rule.threshold; // "tidak menumpuk"
+        return bestDist < rule.threshold;
+    }
+    case BonusRuleType::OVERLAP_AABB:
+    {
+        for (const auto &objA : gSceneObjects)
+        {
+            if (objA.subType != rule.target) continue;
+            for (const auto &objB : gSceneObjects)
+            {
+                if (objB.subType != rule.anchor) continue;
+                if (&objA == &objB) continue;
+                if (AABBOverlap(objA, objB)) return true;
+            }
+        }
+        return false;
+    }
+    case BonusRuleType::EXCLUSION_ZONE:
+    {
+        // No objects within the exclusion zone (centered at zoneX, zoneZ)
+        for (const auto &obj : gSceneObjects)
+        {
+            float dx = obj.position.x - rule.zoneX;
+            float dz = obj.position.z - rule.zoneZ;
+            float dist = std::sqrt(dx * dx + dz * dz);
+            if (dist < rule.threshold) return false;
+        }
+        return true;
+    }
+    case BonusRuleType::WITHIN_RANGE:
+    {
+        // Maximum distance between any two of same type > threshold → means they're not on top of each other
+        if (rule.target == rule.anchor)
+        {
+            // All pairs of same type must have distance > threshold
+            for (size_t i = 0; i < gSceneObjects.size(); ++i)
+            {
+                if (gSceneObjects[i].subType != rule.target) continue;
+                for (size_t j = i + 1; j < gSceneObjects.size(); ++j)
+                {
+                    if (gSceneObjects[j].subType != rule.anchor) continue;
+                    float d = ObjectCenterDistance(gSceneObjects[i], gSceneObjects[j]);
+                    if (d < rule.threshold) return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
+//  Aesthetics heuristic
+// ---------------------------------------------------------------------------
+
+static int ComputeAestheticsScore()
+{
+    if (gSceneObjects.empty()) return 0;
+    // Balance (0-10): center of mass distance from origin
+    float cx = 0.0f, cz = 0.0f;
+    int count = 0;
+    for (const auto &obj : gSceneObjects)
+    {
+        cx += obj.position.x;
+        cz += obj.position.z;
+        ++count;
+    }
+    cx /= static_cast<float>(count);
+    cz /= static_cast<float>(count);
+    float distFromCenter = std::sqrt(cx * cx + cz * cz);
+    int balanceScore = 10 - static_cast<int>(distFromCenter * 2.0f);
+    if (balanceScore < 0) balanceScore = 0;
+
+    // Utilization (0-10): how many items spread across the room
+    int utilizationScore = (count < 3) ? count * 3 : 10;
+    if (utilizationScore > 10) utilizationScore = 10;
+
+    return balanceScore + utilizationScore;
+}
+
+// ---------------------------------------------------------------------------
+//  Scoring system
+// ---------------------------------------------------------------------------
 
 const LevelData &GetCurrentLevel()
 {
@@ -462,24 +700,22 @@ GameState EvaluateSubmission()
 
     const LevelData &level = GetCurrentLevel();
 
-    // Satu loop: hitung requirement sekaligus cari penyebab gagal
-    bool allMet = true;
+    // Reset scoring state
     gState.failReason[0] = '\0';
+    gState.bonusScore = 0;
+    gState.aestheticsScore = 0;
 
+    // ── Requirement check ──
+    bool allMet = true;
+    int reqMet = 0, reqTotal = 0;
     for (const auto &req : level.requiredItems)
     {
-        int count = 0;
-        for (const auto &obj : gSceneObjects)
-        {
-            if (req.subType != ObjectSubType::NONE)
-            {
-                if (obj.subType == req.subType) ++count;
-            }
-            else
-            {
-                if (obj.type == req.type) ++count;
-            }
-        }
+        reqTotal += req.count;
+        int count = CountOfSubType(req.subType);
+        if (count >= req.count)
+            reqMet += req.count;
+        else
+            reqMet += count;
 
         if (count < req.count)
         {
@@ -508,8 +744,34 @@ GameState EvaluateSubmission()
         return GameState::LOSE;
     }
 
-    // WIN
-    gState.finalScore = 100;
+    // ── Requirement score (50% = 50 points) ──
+    int reqScore = 50;
+
+    // ── Bonus rules (30% = 30 points) ──
+    int bonusMet = 0;
+    int bonusTotal = static_cast<int>(level.bonusRules.size());
+    if (bonusTotal > 3) bonusTotal = 3;
+    for (const auto &rule : level.bonusRules)
+    {
+        if (bonusMet >= 3) break;
+        if (CheckBonusRule(rule))
+            bonusMet++;
+    }
+    gState.bonusScore = bonusMet * 10;  // +10 per rule, max 30
+
+    // ── Aesthetics (20% = 20 points) ──
+    gState.aestheticsScore = ComputeAestheticsScore();
+    if (gState.aestheticsScore > 20) gState.aestheticsScore = 20;
+
+    // ── Penalty ──
+    int penalty = gState.penaltyCount * 5;
+    if (penalty > 50) penalty = 50;  // cap
+
+    // ── Final score ──
+    gState.finalScore = reqScore + gState.bonusScore + gState.aestheticsScore - penalty;
+    if (gState.finalScore < 0) gState.finalScore = 0;
+    if (gState.finalScore > 100) gState.finalScore = 100;
+
     return GameState::WIN;
 }
 

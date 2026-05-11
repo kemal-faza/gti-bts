@@ -757,10 +757,26 @@ void RenderHUD()
         lineY += 20;
     }
 
+    // ── Bonus Rules ──
+    lineY += 8;
+    SetColor(0.55f, 0.55f, 0.55f);
+    RenderString(10, static_cast<float>(lineY), bodyFont,
+                 "--- Bonus Rules ---");
+    lineY += 24;
+
+    for (const auto &rule : level.bonusRules)
+    {
+        bool met = CheckBonusRule(rule);   // We'll call from outside EvaluateSubmission
+        SetColor(met ? 0.2f : 0.6f, met ? 1.0f : 0.6f, met ? 0.2f : 0.6f);
+        std::snprintf(buf, sizeof(buf), "[%c] %s", met ? 'v' : ' ', rule.description);
+        RenderString(10, static_cast<float>(lineY), bodyFont, buf);
+        lineY += 20;
+    }
+
     // Petunjuk
     SetColor(0.6f, 0.6f, 0.6f);
     RenderString(10, static_cast<float>(gWindowHeight) - 32, bodyFont,
-                 "Enter = Submit | Tab = Edit/View | Esc = Menu | Q/E = Rotate");
+                 "Enter=Submit Tab=Edit/View Esc=Menu Q/E=Rotate X=Del");
 
     PopOverlayOrtho();
 }
@@ -812,26 +828,44 @@ void RenderOverlay()
     else if (gState.gameState == GameState::WIN)
     {
         SetColor(0.2f, 1.0f, 0.2f);
-        std::snprintf(buf, sizeof(buf), " SELESAI! ");
-        RenderString(static_cast<float>(cx) - 60, static_cast<float>(cy) - 40,
+        std::snprintf(buf, sizeof(buf), " SELESAI! Skor: %d/100", gState.finalScore);
+        RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) - 60,
                      headingFont, buf);
+
+        SetColor(1.0f, 1.0f, 1.0f);
+        std::snprintf(buf, sizeof(buf), "Requirement:  50/50");
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) - 20,
+                     bodyFont, buf);
+
+        std::snprintf(buf, sizeof(buf), "Bonus:        %d/30", gState.bonusScore);
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 4,
+                     bodyFont, buf);
+
+        std::snprintf(buf, sizeof(buf), "Aesthetics:   %d/20", gState.aestheticsScore);
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 28,
+                     bodyFont, buf);
+
+        SetColor(1.0f, 0.3f, 0.3f);
+        std::snprintf(buf, sizeof(buf), "Penalti:      -%d", gState.penaltyCount * 5);
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 52,
+                     bodyFont, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Budget terpakai: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
-        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 80,
                      bodyFont, buf);
 
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
-            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 50,
+            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 110,
                          headingFont, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
-            RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 50,
+            RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 110,
                          headingFont, "Semua Level Selesai!");
         }
         SetColor(0.6f, 0.6f, 0.6f);

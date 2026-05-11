@@ -1,145 +1,175 @@
-# Ruang (OpenGL GLUT)
+# Ruang — Interior Designer Simulator
 
-Project ini adalah simulator layout arsitektur berbasis state machine (state-driven) yang bertujuan untuk mendekorasi suatu ruangan.
+**Ruang** adalah game desain interior 3D berbasis OpenGL 1.x fixed-function pipeline dan GLUT (freeglut). Pemain berperan sebagai desainer interior yang harus memenuhi brief klien dengan menata furnitur di dalam ruangan sesuai budget dan aturan yang diberikan.
 
-Aplikasi memiliki dua mode utama:
+Dibangun sebagai **Tugas Besar Praktikum Grafika dan Teknik Interaktif** — Program Studi Informatika 2025/2026.
 
-- `EDIT`: untuk membuat dan menata objek pada bidang datar.
-- `VIEW`: untuk inspeksi scene 3D dengan preset kamera perspektif.
+## Tech Stack
+
+- **C++17** — Standar bahasa
+- **OpenGL 1.x** — Fixed-function pipeline, glBegin/glEnd
+- **GLUT (freeglut 3.8+)** — Window management, input, font
+- **stb_image.h** — Texture loading (single-header)
+- **nlohmann/json** — glTF JSON parsing (single-header)
+- **glTF 2.0** — Model format untuk 9 furniture 3D
+
+## Build dan Run
+
+```bash
+# Linux
+g++ src/*.cpp -o build/main -lGL -lGLU -lglut -std=c++17 -Isrc
+./build/main
+
+# Windows (MSYS2 UCRT64)
+g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32 -std=c++17 -Isrc
+./build/main.exe
+```
+
+## Gameplay
+
+### Alur Permainan
+1. **Menu** — Lihat brief klien, requirement, dan budget
+2. **EDIT mode** — Pilih furnitur (key 1-8), tempatkan (Space), atur posisi (WASD/drag), rotasi (Q/E), hapus (X)
+3. **VIEW mode** — Inspeksi 3D, orbit kamera, toggle fly-through (P)
+4. **Submit** (Enter) — Sistem evaluasi: requirement, bonus rules, aesthetics
+5. **WIN** — Lihat skor breakdown, lanjut ke level berikutnya
+6. **LOSE** — Lihat penyebab gagal, retry atau kembali ke menu
+
+### 3 Level
+
+| Level | Klien | Item Wajib | Budget | Bonus |
+|-------|-------|-------------|--------|-------|
+| 1 | Ruang Tamu | 2 sofa, 1 meja, 1 karpet | 50 | Meja di atas karpet + Sofa dekat meja |
+| 2 | Ruang Makan | 1 meja bundar, 4 kursi | 60 | Kursi dekat meja + Kursi tidak menumpuk |
+| 3 | Kamar Tidur | 1 lemari, 1 lampu, 1 karpet | 45 | Lampu dekat lemari + Pintu tidak terhalang |
+
+### Scoring (0-100)
+
+| Komponen | Maks | Detail |
+|----------|------|--------|
+| Requirement | 50 | Semua item wajib terpasang |
+| Bonus Rules | 30 | +10 per rule, max 3 |
+| Aesthetics | 20 | Balance + Utilization |
+| Penalti | -50 | -5 per placement gagal |
+
+## Kontrol Lengkap
+
+### Global
+| Tombol | Fungsi |
+|--------|--------|
+| Tab | Mode EDIT ↔ VIEW |
+| Enter | Submit / Mulai / Lanjut / Ulang |
+| Esc | Menu / Keluar |
+
+### Mode EDIT
+| Tombol | Fungsi |
+|--------|--------|
+| 1 — 8 | Pilih jenis furnitur (Meja, Sofa, Kursi, Meja Bundar, Lemari, Rak, Karpet, Lampu) |
+| Space | Tempatkan furnitur terpilih |
+| W A S D | Geser objek terpilih |
+| Q / E | Rotasi objek (-15° / +15°) |
+| [ / ] | Pilih objek sebelumnya / berikutnya |
+| X / Delete | Hapus objek terpilih |
+| Mouse Drag | Geser objek terpilih |
+
+### Mode VIEW
+| Tombol | Fungsi |
+|--------|--------|
+| 1 / 2 / 3 | Preset kamera 1-point / 2-point / 3-point |
+| W A S D | Gerak target kamera |
+| Q / E | Naik / turun target kamera |
+| Mouse Drag | Orbit kamera (yaw / pitch) |
+| L | Toggle directional light |
+| F | Toggle smooth / flat shading |
+| Z | Toggle depth test |
+| P | Toggle fly-through kamera (auto orbit) |
 
 ## Struktur Project
 
 ```
 gti-bts/
-├── src/                     ← source code
-├── build/                   ← output binary (gitignored)
-├── assets/                  ← tekstur, gambar
-├── docs/                    ← dokumentasi, rencana
-│   ├── PLAN.md
-│   ├── AGENTS.md
-│   └── README.md            ← (file ini)
+├── src/                          # Source code
+│   ├── main.cpp                  # Entry point, GLUT callbacks, key handling
+│   ├── renderer.cpp / .h         # Rendering pipeline
+│   ├── scene.cpp / .h            # Game state, objects, collision, scoring
+│   ├── texture.cpp / .h          # Texture loading + procedural generation
+│   ├── ui.cpp / .h               # Text rendering, window title
+│   ├── gltf_loader.cpp / .h      # glTF model parser + renderer
+│   ├── json.hpp                  # nlohmann/json (single-header)
+│   └── stb_image.h               # stb_image (single-header)
+├── assets/
+│   ├── texture/                  # Texture files (PNG)
+│   │   ├── carpet.png, fabric.png, metal.png, wall.png
+│   │   ├── wood-floor.png, wood-grain.png
+│   └── object/                   # glTF furniture models
+│       ├── sofa/, table/, cabinet/, shelf/, chair/
+│       ├── rounded-table/, lamp/, carpet/, fan/
+│           └── scene.gltf + scene.bin
+├── build/                        # Output binary (gitignored)
+├── docs/
+│   ├── PLAN.md                   # Rencana dan status project
+│   ├── AGENTS.md                 # Identitas dan masalah proyek
+│   └── README.md                 # (file ini)
 └── .gitignore
 ```
 
-## Build dan Run
-
-**Linux:**
-```bash
-g++ src/*.cpp -o build/main -lGL -lGLU -lglut
-./build/main
-```
-
-**Windows (MSYS2 UCRT64):**
-```bash
-g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32
-./build/main.exe
-```
-
-## Kontrol
-
-### Kontrol Global
-
-- `Esc`: keluar aplikasi.
-- `Tab`: ganti mode `EDIT` <-> `VIEW`.
-
-### Mode EDIT (Orthographic)
-
-- `W A S D`: geser objek terpilih pada bidang X-Z.
-- `Klik kiri + drag`: geser objek terpilih pada bidang X-Z.
-- `Space`: tambah objek baru ke scene.
-- `[` / `]`: pilih objek sebelumnya / berikutnya.
-
-### Mode VIEW
-
-- `1`: kamera preset 1-point perspective.
-- `2`: kamera preset 2-point perspective.
-- `3`: kamera preset 3-point perspective.
-- `W A S D`: gerak target kamera (maju, mundur, kiri, kanan).
-- `Q / E`: naik / turun target kamera.
-- `Klik kiri + drag`: ubah yaw dan pitch kamera (look around).
-- `L`: toggle light.
-- `F`: toggle shading (flat / smooth).
-- `Z`: toggle depth test.
-
-## Struktur Data (Data Oriented)
-
-Scene disimpan sebagai data, tidak hardcode di fungsi render:
-
-- `SceneObject`
-    - `type`: `CUBE`, `CYLINDER`, `ROAD`
-    - `position`: `(x, y, z)`
-    - `rotationY`
-    - `material`: `ROUGH` atau `GLOSSY`
-
-- `AppState`
-    - `activeMode`: `EDIT` atau `VIEW`
-    - `cameraPreset`: `ONE_POINT`, `TWO_POINT`, `THREE_POINT`, `FREE`
-    - `selectedObjectIndex`
-    - `smoothShading`
-    - `directionalLightEnabled`
-    - `depthTestEnabled`
-    - state input mouse (`isDragging`, `lastMouseX`, `lastMouseY`)
-
 ## Penerapan Konsep Grafika
 
-### 1. Proyeksi Orthographic
+### 1. Proyeksi
+- **Orthographic** (`glOrtho`): Mode EDIT — top-down view untuk penempatan objek presisi
+- **Perspective** (`gluPerspective`): Mode VIEW — 60° FOV, 3 preset kamera (1/2/3-point) + free orbit
 
-- Saat mode `EDIT`, matriks proyeksi memakai `glOrtho(...)`.
-- Kamera dipaksa top-down (`gluLookAt` dari atas) agar cocok untuk penempatan objek pada grid.
+### 2. Transformasi
+- Translasi (`glTranslatef`) dan rotasi (`glRotatef`) per objek via matrix stack
+- Transformasi hirarkis untuk model glTF (node parenting dengan TRS + matrix)
 
-### 2. Proyeksi Perspective
+### 3. Rendering glTF
+- 9 model 3D (sofa, meja, kursi, dll) di-parse dari glTF 2.0
+- `glBegin/glEnd` dengan vertex color + normal + texcoord per primitive
+- FLOOR mesh filtering via material alphaMode + name check
 
-- Saat mode `VIEW`, matriks proyeksi memakai `gluPerspective(...)`.
-- Preset kamera:
-    - `1-point`: kamera menghadap lurus ke arah depth utama scene.
-    - `2-point`: kamera dari sudut scene (horizon relatif level).
-    - `3-point`: kamera tinggi menatap serong ke bawah.
-- Setelah user drag mouse atau bergerak bebas, preset menjadi `FREE`.
+### 4. Tekstur
+- `stb_image.h` untuk loading, `gluBuild2DMipmaps()` untuk mipmap
+- `GL_MODULATE` untuk menggabungkan tekstur × material color
+- Procedural checker texture sebagai fallback
+- Texture atlas untuk lantai (repeat) dan dinding (mapped)
 
-### 3. Rendering Pipeline: Geometri
+### 5. Lighting & Material
+- **Directional light** (LIGHT0): matahari, toggle L
+- **Point light** (LIGHT1): lampu lokal dengan attenuation
+- **Material system**: ROUGH (specular rendah) vs GLOSSY (specular tinggi)
+- **Emission**: highlight selection, lamp glow pulsing
 
-- Geometri tidak digambar hardcode satu-satu panjang.
-- Semua objek dirender dengan loop `for` pada list `sceneObjects`.
-- Setiap objek memakai `glPushMatrix()` / `glPopMatrix()`, lalu translasi, rotasi, material, dan draw primitive sesuai tipe.
+### 6. Shadow
+- **Projective shadow + stencil buffer**: dua pass rendering
+- Pass 1: render lantai ke stencil buffer dengan depth test ON
+- Pass 2: render shadow hitam semi-transparan di area stencil
+- Shadow hanya di VIEW mode (skip di EDIT agar tidak mengganggu)
 
-### 4. Rendering Pipeline: Kamera
+### 7. Animasi
+- **Kipas**: rotasi Y (120°/detik) via `gAnimTime` increment di Idle
+- **Lampu**: emission glow pulsing via `sin(gAnimTime * 2.5)`
+- **Fly-through kamera**: 8 waypoints orbit 360°, smoothstep lerp, looping (toggle P)
+- **Selection highlight**: wireframe bounding box dengan pulse effect
 
-- Kamera diputuskan dari state mode + preset.
-- Orthographic: top-down view untuk editing.
-- Perspective: orbit camera (yaw, pitch, distance, target) untuk inspeksi dan look around.
+### 8. Depth Test & Shading
+- Z-buffer via `GL_DEPTH_TEST`, toggle Z
+- `GL_SMOOTH` / `GL_FLAT` shading toggle via F key
 
-### 5. Rendering Pipeline: Cahaya
+### 9. Collision Detection
+- AABB pairwise check saat placement + drag
+- Rotation-aware via `GetRotatedBounds()` (4 corner rotasi)
+- Boundary room clamp ke ±kRoomSize
 
-- Dua sumber cahaya dipakai:
-    - `GL_LIGHT0`: directional light (matahari), bisa di-toggle dengan `L`.
-    - `GL_LIGHT1`: point light (lampu lokal) dengan attenuation.
-- Posisi dan properti lampu di-set setelah view matrix aktif, sebelum geometri digambar.
+## Urutan Render (`Display()`)
 
-### 6. Karakteristik Permukaan (Material)
-
-- Material `ROUGH`: specular rendah, shininess kecil.
-- Material `GLOSSY`: specular tinggi, shininess besar.
-- Objek terpilih di mode edit diberi emission ringan agar terlihat jelas.
-
-### 7. Algoritma Rendering
-
-- Z-buffer dipakai melalui `GL_DEPTH_TEST`.
-- Untuk kebutuhan demonstrasi, depth test bisa di-toggle dengan `Z`.
-    - `ON`: occlusion benar (objek dekat menutupi objek jauh).
-    - `OFF`: urutan gambar dapat terlihat salah.
-
-### 8. Shading
-
-- Tersedia toggle shading `GL_SMOOTH` dan `GL_FLAT` lewat tombol `F`.
-- Ini memperlihatkan perbedaan visual Gouraud-like smooth interpolation vs flat per-face shading.
-
-## Urutan Render di `Display()`
-
-Urutan render mengikuti pipeline yang benar:
-
-1. `glClear(...)`
-2. Set projection matrix (`glOrtho` atau `gluPerspective` berdasarkan mode)
-3. Set view matrix (`gluLookAt` berdasarkan mode/preset)
-4. Setup lights (`GL_LIGHT0`, `GL_LIGHT1`)
-5. Render geometri scene (grid, loop objek, marker lampu)
-6. `glutSwapBuffers()`
+1. `glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)`
+2. Set projection matrix (ortho / perspective)
+3. Set view matrix (`gluLookAt`)
+4. Setup lights (LIGHT0 + LIGHT1)
+5. Draw room (floor + walls with textures)
+6. RenderShadows (projective + stencil, VIEW mode only)
+7. DrawSceneObjects (loop scene objects with glTF models)
+8. Draw selection highlight (EDIT mode)
+9. RenderOverlay / RenderHUD (menu, score, budget, checklist)
+10. `glutSwapBuffers()`

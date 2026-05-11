@@ -39,7 +39,15 @@ static void StartLevel(int index)
     gState.currentLevel = index;
     gState.gameState = GameState::PLAYING;
     gState.activeMode = AppMode::EDIT_ORTHO;
+    gState.penaltyCount = 0;
+    gState.isFlyThrough = false;
     gSceneObjects.clear();
+
+    // Auto-spawn kipas langit-langit jika level memintanya
+    const LevelData &lv = GetCurrentLevel();
+    if (lv.autoSpawnFan)
+        SpawnRotatingFan();
+
     glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
     gState.titleDirty = true;
     glutPostRedisplay();
@@ -150,6 +158,14 @@ static void HandleEditKeys(unsigned char key)
         gKeyDown[key] = true;
 
     // Rotasi objek
+    // Hapus objek
+    if (key == 'x' || key == 127)   // X atau Delete
+    {
+        DeleteSelectedObject();
+        gState.titleDirty = true;
+        glutPostRedisplay();
+    }
+
     if (key == 'q')
     {
         SceneObject *sel = GetSelectedObject();
@@ -208,6 +224,16 @@ static void HandleViewKeys(unsigned char key)
         gState.titleDirty = true;
         glutPostRedisplay();
         return;
+    }
+
+    if (key == 'p')
+    {
+        gState.isFlyThrough = !gState.isFlyThrough;
+        gState.flyThroughT = 0.0f;
+        if (gState.isFlyThrough)
+            gState.activeMode = AppMode::VIEW_PERSPECTIVE;
+        gState.titleDirty = true;
+        glutPostRedisplay();
     }
 
     if (key == 'w' || key == 'a' || key == 's' || key == 'd' ||
@@ -320,6 +346,13 @@ void Idle()
     {
         UpdateWindowTitle();
         gState.titleDirty = false;
+    }
+
+    // Update fly-through animation (works in both PLAYING and MENU states)
+    if (gState.isFlyThrough)
+    {
+        UpdateFlyThrough(0.016f);
+        glutPostRedisplay();
     }
 
     // Only process movement during PLAYING state

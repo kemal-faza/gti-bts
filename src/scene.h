@@ -48,6 +48,26 @@ enum class ObjectSubType
     KIPAS
 };
 
+enum class BonusRuleType
+{
+    PROXIMITY,      // jarak pusat target ke anchor < threshold
+    OVERLAP_AABB,   // AABB target overlap dengan anchor
+    EXCLUSION_ZONE, // tidak ada objek dalam area tertentu
+    WITHIN_RANGE,   // objek target dalam jarak threshold dari objek manapun
+};
+
+struct BonusRule
+{
+    BonusRuleType type;
+    ObjectSubType target;
+    ObjectSubType anchor;     // NONE untuk EXCLUSION_ZONE/WITHIN_RANGE
+    float threshold;          // max distance / half-size exclusion
+    const char *description;  // teks ditampilkan di HUD
+    // Untuk EXCLUSION_ZONE: anchor_x, anchor_z sebagai koordinat pusat
+    float zoneX = 0.0f;
+    float zoneZ = 0.0f;
+};
+
 enum class GameState
 {
     MENU,
@@ -91,7 +111,9 @@ struct LevelData
     const char *roomName;
     const char *clientBrief;
     std::vector<LevelRequirement> requiredItems;
+    std::vector<BonusRule> bonusRules;
     int budget;
+    bool autoSpawnFan = true;
 };
 
 struct AppState
@@ -113,7 +135,13 @@ struct AppState
     int currentLevel = 0;
     int totalSpent = 0;
     int finalScore = 0;
+    int bonusScore = 0;
+    int aestheticsScore = 0;
+    int penaltyCount = 0;
     char failReason[128] = {0};
+    // Fly-through
+    bool isFlyThrough = false;
+    float flyThroughT = 0.0f;
 };
 
 // ---------------------------------------------------------------------------
@@ -185,3 +213,16 @@ void InitializeLevels();
 const LevelData &GetCurrentLevel();
 GameState EvaluateSubmission();
 const char *GetSubTypeLabel(ObjectSubType subType);
+
+// Object management
+void DeleteSelectedObject();
+void SpawnRotatingFan();
+
+// Bonus rule checker (exposed for HUD display)
+bool CheckBonusRule(const BonusRule &rule);
+
+// Fly-through
+struct FlyWaypoint { Vec3 eye; Vec3 target; };
+extern FlyWaypoint gFlyWaypoints[8];
+extern const int gFlyWaypointCount;
+void UpdateFlyThrough(float deltaT);
