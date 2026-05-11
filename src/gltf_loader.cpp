@@ -691,9 +691,28 @@ void DrawGLTFModel(const GLTFModel &model, bool shadowMode)
             hadTexture = true;
         }
 
-        // Set vertex color from material (skip during shadow pass so shadow stays black)
+        // Set vertex color + material from baseColor (skip during shadow pass so shadow stays black)
         if (!shadowMode)
+        {
             glColor4fv(prim.baseColor);
+
+            // For non-textured primitives: set material properties so lighting works correctly.
+            // (Textured primitives already override material to white above.)
+            if (prim.glTextureId == 0)
+            {
+                float ambient[4] = {
+                    prim.baseColor[0] * 0.35f,
+                    prim.baseColor[1] * 0.35f,
+                    prim.baseColor[2] * 0.35f,
+                    prim.baseColor[3]
+                };
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+                glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, prim.baseColor);
+                float spec[4] = {0.2f, 0.2f, 0.2f, 1.0f};
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
+                glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 20.0f);
+            }
+        }
 
         if (!prim.indices.empty())
         {

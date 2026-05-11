@@ -2,7 +2,7 @@
 #include "scene.h"
 
 #include <GL/gl.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 #include <cstdio>
 #include <cstring>
 
@@ -14,8 +14,7 @@ void SetColor(const float r, const float g, const float b)
 void RenderString(float x, float y, void *font, const char *text)
 {
     glRasterPos2f(x, y);
-    for (const char *c = text; *c != '\0'; ++c)
-        glutBitmapCharacter(font, static_cast<int>(*c));
+    glutBitmapString(font, reinterpret_cast<const unsigned char *>(text));
 }
 
 void RenderStringMultiline(float x, float y, void *font, const char *text)
