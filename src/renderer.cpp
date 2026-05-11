@@ -318,6 +318,80 @@ void DrawPointLightMarker()
 }
 
 // ---------------------------------------------------------------------------
+//  Shadow rendering (projective shadow + stencil)
+// ---------------------------------------------------------------------------
+
+static void ApplyShadowMatrix(const float lx, const float ly, const float lz)
+{
+    GLfloat shadowMat[16] = {
+         ly,  0,  0,  0,
+        -lx,  0, -lz, -1,
+          0,  0,  ly,  0,
+          0,  0,  0,  ly
+    };
+    glMultMatrixf(shadowMat);
+}
+
+void RenderShadows()
+{
+    // Arah directional light (LIGHT0) dari SetupLights
+    const float lx = -0.45f;
+    const float ly =  1.0f;
+    const float lz =  0.25f;
+
+    const GLboolean wasLighting = glIsEnabled(GL_LIGHTING);
+
+    glEnable(GL_STENCIL_TEST);
+
+    // Pass 1: render lantai ke stencil buffer
+    glClear(GL_STENCIL_BUFFER_BIT);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
+    glDisable(GL_LIGHTING);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDepthMask(GL_FALSE);
+
+    glBegin(GL_QUADS);
+    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
+    glEnd();
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDepthMask(GL_TRUE);
+
+    // Pass 2: gambar shadow hanya di area stencil
+    glStencilFunc(GL_EQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_TEXTURE_2D);
+
+    glColor4f(0.0f, 0.0f, 0.0f, 0.40f);
+
+    for (const auto &obj : gSceneObjects)
+    {
+        glPushMatrix();
+        glTranslatef(obj.position.x, obj.position.y, obj.position.z);
+        glRotatef(obj.rotationY, 0.0f, 1.0f, 0.0f);
+        ApplyShadowMatrix(lx, ly, lz);
+        glTranslatef(0.0f, 0.02f, 0.0f); // bias untuk anti z-fighting
+
+        DrawObjectGeometry(obj);
+        glPopMatrix();
+    }
+
+    glDisable(GL_BLEND);
+    glDisable(GL_STENCIL_TEST);
+
+    // Restore state untuk scene rendering
+    if (wasLighting) glEnable(GL_LIGHTING);
+}
+
+// ---------------------------------------------------------------------------
 //  UI overlay helpers
 // ---------------------------------------------------------------------------
 
@@ -539,7 +613,7 @@ void RenderOverlay()
 
 void Display()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     // Always render scene as background (even in menu, shows last view)
     ConfigureProjectionMatrix();
@@ -547,6 +621,7 @@ void Display()
     SetupLights();
 
     DrawGrid();
+    RenderShadows();
     DrawSceneObjects();
     DrawPointLightMarker();
 

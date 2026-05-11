@@ -19,4 +19,5 @@ void DrawPointLightMarker();
 
 void RenderHUD();
 void RenderOverlay();
+void RenderShadows();
 void Display();
