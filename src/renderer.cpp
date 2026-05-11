@@ -111,10 +111,15 @@ void SetupLights()
     glEnable(GL_LIGHTING);
 
     if (gState.directionalLightEnabled)
+    {
         glEnable(GL_LIGHT0);
+        glEnable(GL_LIGHT1);
+    }
     else
+    {
         glDisable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
+        glDisable(GL_LIGHT1);
+    }
 
     const GLfloat globalAmbient[] = {0.08f, 0.08f, 0.09f, 1.0f};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
@@ -290,24 +295,24 @@ static void DrawSofa()
 
 static void DrawChair()
 {
-    // Seat: 1.0 x 0.08 x 1.0
+    // Seat: 0.4 x 0.08 x 0.4
     glPushMatrix();
     glTranslatef(0.0f, 0.50f, 0.0f);
-    glScalef(1.0f, 0.08f, 1.0f);
+    glScalef(0.4f, 0.08f, 0.4f);
     DrawTexturedCube(1.0f);
     glPopMatrix();
 
-    // Backrest: 1.0 x 0.50 x 0.08
+    // Backrest: 0.4 x 0.50 x 0.08
     glPushMatrix();
-    glTranslatef(0.0f, 0.75f, -0.46f);
-    glScalef(1.0f, 0.50f, 0.08f);
+    glTranslatef(0.0f, 0.75f, -0.23f);
+    glScalef(0.4f, 0.50f, 0.08f);
     DrawTexturedCube(1.0f);
     glPopMatrix();
 
     // Legs
     const float legH = 0.50f;
     const float legR = 0.04f;
-    const float l = 0.40f;
+    const float l = 0.16f;
     for (int i = 0; i < 4; ++i)
     {
         float x = (i == 0 || i == 3) ? l : -l;
@@ -557,16 +562,21 @@ void DrawRoom()
     const float texRepeat = kRoomSize * 0.5f;  // repeat ~ setiap 2 unit
     GLuint floorTex = GetFloorTexture();
 
+    const bool lightsOn = gState.directionalLightEnabled;
+
     if (floorTex != 0)
     {
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, floorTex);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        if (lightsOn)
+            glColor3f(1.0f, 1.0f, 1.0f);
+        else
+            glColor3f(0.06f, 0.06f, 0.07f);
     }
     else
     {
-        glColor3f(0.30f, 0.32f, 0.35f);
+        glColor3f(lightsOn ? 0.30f : 0.05f, lightsOn ? 0.32f : 0.05f, lightsOn ? 0.35f : 0.06f);
     }
 
     glBegin(GL_QUADS);
@@ -635,6 +645,9 @@ void DrawRoom()
         glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, kRoomSize);
         glTexCoord2f(0.0f, h);         glVertex3f( kRoomSize, h, -kRoomSize);
         glEnd();
+
+        // Reset two-side lighting agar tidak mempengaruhi objek setelahnya
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
 
         glDisable(GL_TEXTURE_2D);
     }
@@ -751,6 +764,8 @@ void RenderShadows()
 {
     // Skip shadows in edit mode — mengganggu visibilitas
     if (gState.activeMode == AppMode::EDIT_ORTHO) return;
+    // Skip shadows when lights are off
+    if (!gState.directionalLightEnabled) return;
 
     // Arah directional light (LIGHT0) — dinormalisasi
     float lx = -0.45f;
@@ -875,33 +890,29 @@ void RenderHUD()
 {
     PushOverlayOrtho();
 
-    // Auto-scale font and layout based on window height
+    // Auto-scale font based on window height (capped agar tidak overflow)
     const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
-    glPixelZoom(fontScale, fontScale);
+    const float zoom = (fontScale < 1.0f) ? 1.0f : ((fontScale > 1.6f) ? 1.6f : fontScale);
+    glPixelZoom(zoom, zoom);
 
-    // ── Background semi-transparan — scaled ──
+    // ── Background semi-transparan (fixed size) ──
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(0.0f, 0.0f, 0.0f, 0.55f);
-    const int panelW = static_cast<int>(350 * fontScale);
-    const int panelH = static_cast<int>(500 * fontScale);
     glBegin(GL_QUADS);
     glVertex2i(0, 0);
-    glVertex2i(panelW, 0);
-    glVertex2i(panelW, panelH);
-    glVertex2i(0, panelH);
+    glVertex2i(350, 0);
+    glVertex2i(350, 500);
+    glVertex2i(0, 500);
     glEnd();
     glDisable(GL_BLEND);
-
-    const float sx = fontScale;   // multiplier X positions
-    const float sy = fontScale;   // multiplier Y positions
 
     const LevelData &level = GetCurrentLevel();
     char buf[128];
 
     SetColor(1.0f, 1.0f, 1.0f);
     std::snprintf(buf, sizeof(buf), "Level %d: %s", level.levelNumber, level.roomName);
-    RenderString(10 * sx, 20 * sy, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10, 20, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Budget
     int spent = 0;
@@ -914,11 +925,11 @@ void RenderHUD()
         SetColor(1.0f, 0.2f, 0.2f);
 
     std::snprintf(buf, sizeof(buf), "Budget: %d / %d", spent, level.budget);
-    RenderString(10 * sx, 40 * sy, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Checklist — item wajib
     SetColor(0.8f, 0.8f, 1.0f);
-    float lineY = 80 * sy;
+    int lineY = 80;
     for (const auto &req : level.requiredItems)
     {
         int count = 0;
@@ -938,16 +949,16 @@ void RenderHUD()
         const char *label = GetSubTypeLabel(req.subType);
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
-        RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18, buf);
-        lineY += 24 * sy;
+        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18, buf);
+        lineY += 24;
     }
 
     // ── Furniture Selection ──
-    lineY += 8 * sy;
+    lineY += 8;
     SetColor(0.55f, 0.55f, 0.55f);
-    RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18,
+    RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
                  "--- Furniture (1-9) ---");
-    lineY += 24 * sy;
+    lineY += 24;
 
     const char *furnitureNames[] = {
         "1. Meja", "2. Sofa", "3. Kursi",
@@ -961,16 +972,15 @@ void RenderHUD()
         else
             SetColor(0.65f, 0.65f, 0.65f);
 
-        RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18,
+        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
                      furnitureNames[i]);
-        lineY += 20 * sy;
+        lineY += 20;
     }
 
     // Petunjuk
     SetColor(0.6f, 0.6f, 0.6f);
-    RenderString(10 * sx, static_cast<float>(gWindowHeight) - 32 * sy,
-                 GLUT_BITMAP_HELVETICA_18,
-                 "Enter = Submit | Tab = Edit/View | Esc = Menu");
+    RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_18,
+                 "Enter = Submit | Tab = Edit/View | Esc = Menu | Q/E = Rotate");
 
     glPixelZoom(1.0f, 1.0f);
     PopOverlayOrtho();
@@ -992,13 +1002,13 @@ void RenderOverlay()
     glEnd();
     glDisable(GL_BLEND);
 
-    // Auto-scale font and layout
+    // Auto-scale font based on window height
     const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
-    glPixelZoom(fontScale, fontScale);
-    const float s = fontScale;
+    const float zoom = (fontScale < 1.0f) ? 1.0f : ((fontScale > 1.6f) ? 1.6f : fontScale);
+    glPixelZoom(zoom, zoom);
 
-    const float cx = static_cast<float>(gWindowWidth) / 2.0f;
-    const float cy = static_cast<float>(gWindowHeight) / 2.0f;
+    const int cx = gWindowWidth / 2;
+    const int cy = gWindowHeight / 2;
     char buf[256];
 
     if (gState.gameState == GameState::MENU)
@@ -1007,76 +1017,76 @@ void RenderOverlay()
 
         SetColor(0.3f, 0.6f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Interior Designer - Room %d", level.levelNumber);
-        RenderString(cx - 120 * s, cy - 80 * s,
+        RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) - 80,
                      GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
-        RenderStringMultiline(cx - 140 * s, cy - 40 * s,
+        RenderStringMultiline(static_cast<float>(cx) - 140, static_cast<float>(cy) - 40,
                               GLUT_BITMAP_HELVETICA_18, level.clientBrief);
 
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(cx - 100 * s, cy + 60 * s,
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 60,
                      GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Mulai");
 
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - 80 * s, cy + 85 * s,
+        RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 85,
                      GLUT_BITMAP_HELVETICA_18, "Esc = Keluar");
     }
     else if (gState.gameState == GameState::WIN)
     {
         SetColor(0.2f, 1.0f, 0.2f);
         std::snprintf(buf, sizeof(buf), " SELESAI! ");
-        RenderString(cx - 60 * s, cy - 40 * s,
+        RenderString(static_cast<float>(cx) - 60, static_cast<float>(cy) - 40,
                      GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Budget terpakai: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
-        RenderString(cx - 100 * s, cy + 20 * s,
+        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
                      GLUT_BITMAP_HELVETICA_18, buf);
 
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
-            RenderString(cx - 100 * s, cy + 50 * s,
+            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 50,
                          GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
-            RenderString(cx - 120 * s, cy + 50 * s,
+            RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 50,
                          GLUT_BITMAP_TIMES_ROMAN_24, "Semua Level Selesai!");
         }
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - 70 * s, cy + 75 * s,
+        RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
                      GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
     else if (gState.gameState == GameState::LOSE)
     {
         SetColor(1.0f, 0.2f, 0.2f);
-        RenderString(cx - 50 * s, cy - 40 * s,
+        RenderString(static_cast<float>(cx) - 50, static_cast<float>(cy) - 40,
                      GLUT_BITMAP_TIMES_ROMAN_24, " GAGAL ");
 
         SetColor(1.0f, 1.0f, 1.0f);
         if (gState.failReason[0] != '\0')
         {
-            RenderString(cx - 140 * s, cy + 20 * s,
+            RenderString(static_cast<float>(cx) - 140, static_cast<float>(cy) + 20,
                          GLUT_BITMAP_HELVETICA_18, gState.failReason);
         }
         else
         {
             std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
                           gState.totalSpent, GetCurrentLevel().budget);
-            RenderString(cx - 100 * s, cy + 20 * s,
+            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
                          GLUT_BITMAP_HELVETICA_18, buf);
         }
 
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(cx - 80 * s, cy + 50 * s,
+        RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 50,
                      GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Coba Lagi");
 
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(cx - 70 * s, cy + 75 * s,
+        RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
                       GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
 
@@ -1172,8 +1182,6 @@ void Display()
         const SceneObject &sel = *GetSelectedObject();
         DrawSelectionHighlight(sel);
     }
-
-    DrawPointLightMarker();
 
     // Overlays and HUD depend on game state
     if (gState.gameState == GameState::MENU ||

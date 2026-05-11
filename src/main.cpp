@@ -147,6 +147,18 @@ static void HandleEditKeys(unsigned char key)
 
     if (key == 'w' || key == 'a' || key == 's' || key == 'd')
         gKeyDown[key] = true;
+
+    // Rotasi objek
+    if (key == 'q')
+    {
+        SceneObject *sel = GetSelectedObject();
+        if (sel) { sel->rotationY -= 15.0f; gState.titleDirty = true; glutPostRedisplay(); }
+    }
+    if (key == 'e')
+    {
+        SceneObject *sel = GetSelectedObject();
+        if (sel) { sel->rotationY += 15.0f; gState.titleDirty = true; glutPostRedisplay(); }
+    }
 }
 
 static void HandleViewKeys(unsigned char key)
@@ -344,6 +356,14 @@ void Idle()
     if (gKeyDown[static_cast<unsigned char>('d')]) { gViewTarget.x += rightX   * kViewMoveSpeed; gViewTarget.z += rightZ   * kViewMoveSpeed; changed = true; }
     if (gKeyDown[static_cast<unsigned char>('q')]) { gViewTarget.y += kViewMoveSpeed; changed = true; }
     if (gKeyDown[static_cast<unsigned char>('e')]) { gViewTarget.y -= kViewMoveSpeed; changed = true; }
+
+    // Clamp view target agar tidak terlalu jauh dari ruangan
+    if (changed)
+    {
+        gViewTarget.x = Clamp(gViewTarget.x, -20.0f, 20.0f);
+        gViewTarget.y = Clamp(gViewTarget.y, 0.0f, 15.0f);
+        gViewTarget.z = Clamp(gViewTarget.z, -20.0f, 20.0f);
+    }
 
     if (changed)
     {
