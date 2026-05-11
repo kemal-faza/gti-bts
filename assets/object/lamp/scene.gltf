@@ -1,0 +1,859 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        167.02890014648438,
+        167.02890014648438,
+        0.0
+      ],
+      "min": [
+        -167.02890014648438,
+        -167.02890014648438,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 48,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        1.0,
+        1.0
+      ],
+      "min": [
+        2.9802322387695313e-08,
+        2.9802322387695313e-08
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 6,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 96,
+      "componentType": 5126,
+      "count": 522,
+      "max": [
+        1.671265959739685,
+        1.671183705329895,
+        28.704809188842773
+      ],
+      "min": [
+        -1.6712645292282104,
+        -1.6713472604751587,
+        24.112651824951172
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 6360,
+      "componentType": 5126,
+      "count": 522,
+      "max": [
+        0.9970588088035583,
+        0.9970619082450867,
+        1.0
+      ],
+      "min": [
+        -0.9969689249992371,
+        -0.9970588088035583,
+        -0.5825075507164001
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 32,
+      "componentType": 5126,
+      "count": 522,
+      "max": [
+        0.674308180809021,
+        0.9861207008361816
+      ],
+      "min": [
+        0.3005048632621765,
+        0.7542999386787415
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 4208,
+      "componentType": 5126,
+      "count": 522,
+      "max": [
+        0.8198792338371277,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 24,
+      "componentType": 5125,
+      "count": 2808,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 12624,
+      "componentType": 5126,
+      "count": 548,
+      "max": [
+        13.154050827026367,
+        8.004225730895996,
+        25.32834815979004
+      ],
+      "min": [
+        -13.205222129821777,
+        -15.46046257019043,
+        20.5340518951416
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 19200,
+      "componentType": 5126,
+      "count": 548,
+      "max": [
+        1.0,
+        1.0,
+        0.9996482729911804
+      ],
+      "min": [
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 8384,
+      "componentType": 5126,
+      "count": 548,
+      "max": [
+        0.9539048671722412,
+        0.9002223014831543
+      ],
+      "min": [
+        0.29633891582489014,
+        0.3259814977645874
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 12768,
+      "componentType": 5126,
+      "count": 548,
+      "max": [
+        0.9536389112472534,
+        76.97149658203125
+      ],
+      "min": [
+        -4.438217639923096,
+        0.04636107385158539
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 11256,
+      "componentType": 5125,
+      "count": 2436,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 25776,
+      "componentType": 5126,
+      "count": 1070,
+      "max": [
+        16.818410873413086,
+        19.355918884277344,
+        22.90850830078125
+      ],
+      "min": [
+        -16.833967208862305,
+        -9.926384925842285,
+        -62.343666076660156
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 38616,
+      "componentType": 5126,
+      "count": 1070,
+      "max": [
+        0.9999998211860657,
+        0.9995389580726624,
+        1.0
+      ],
+      "min": [
+        -0.9999998211860657,
+        -0.9993360638618469,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 17152,
+      "componentType": 5126,
+      "count": 1070,
+      "max": [
+        0.9539048671722412,
+        0.7643396854400635
+      ],
+      "min": [
+        0.0005000089295208454,
+        0.21355964243412018
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 25712,
+      "componentType": 5126,
+      "count": 1070,
+      "max": [
+        1.151064157485962,
+        75.93429565429688
+      ],
+      "min": [
+        -2.0201711654663086,
+        0.1682877540588379
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 21000,
+      "componentType": 5125,
+      "count": 5220,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 51456,
+      "componentType": 5126,
+      "count": 833,
+      "max": [
+        15.452860832214355,
+        15.689332962036133,
+        38.5272331237793
+      ],
+      "min": [
+        -15.45285415649414,
+        -15.689361572265625,
+        20.50748062133789
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 61452,
+      "componentType": 5126,
+      "count": 833,
+      "max": [
+        0.9994097948074341,
+        1.0,
+        1.0
+      ],
+      "min": [
+        -0.9994097352027893,
+        -0.9974861741065979,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 833,
+      "max": [
+        0.9988718628883362,
+        0.9999313354492188,
+        0.024043405428528786,
+        1.0
+      ],
+      "min": [
+        -1.0,
+        -0.9999313354492188,
+        -0.024042099714279175,
+        1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 34272,
+      "componentType": 5126,
+      "count": 833,
+      "max": [
+        0.999500036239624,
+        0.21131914854049683
+      ],
+      "min": [
+        0.0005000089295208454,
+        0.0005000000237487257
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 40936,
+      "componentType": 5126,
+      "count": 833,
+      "max": [
+        16.096723556518555,
+        3.3799357414245605
+      ],
+      "min": [
+        -3.2871575355529785,
+        -4.19804573059082
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 41880,
+      "componentType": 5125,
+      "count": 4050,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 71448,
+      "componentType": 5126,
+      "count": 477,
+      "max": [
+        0.37744140625,
+        0.37468528747558594,
+        20.181339263916016
+      ],
+      "min": [
+        -0.373779296875,
+        -0.37457847595214844,
+        19.105857849121094
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 77172,
+      "componentType": 5126,
+      "count": 477,
+      "max": [
+        0.991531252861023,
+        0.9917649626731873,
+        0.8574168682098389
+      ],
+      "min": [
+        -0.9913985729217529,
+        -0.9913871884346008,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 47600,
+      "componentType": 5126,
+      "count": 477,
+      "max": [
+        0.9539048671722412,
+        0.9752501249313354
+      ],
+      "min": [
+        0.8816760778427124,
+        0.903021514415741
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 51416,
+      "componentType": 5126,
+      "count": 477,
+      "max": [
+        1.0,
+        0.9999999403953552
+      ],
+      "min": [
+        3.794549385816026e-08,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 58080,
+      "componentType": 5125,
+      "count": 2634,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "MADE.COM (https://sketchfab.com/made-it)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/frances-tripod-floor-lamp-copper-ca070a826ee3441799d8fe438d6e1aac",
+      "title": "Frances Tripod Floor Lamp, Copper"
+    },
+    "generator": "Sketchfab-12.68.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 68616,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 55232,
+      "byteOffset": 68616,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 82896,
+      "byteOffset": 123848,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 13328,
+      "byteOffset": 206744,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 220072,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/FLOOR_baseColor.png"
+    },
+    {
+      "uri": "textures/METAL_WHITE_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/LAMP_SHADE_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "FLOOR",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0
+      }
+    },
+    {
+      "doubleSided": true,
+      "emissiveFactor": [
+        1.0,
+        1.0,
+        0.7367789472374291
+      ],
+      "name": "LIGHT_BULB",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.9700679790705267,
+          0.22269613336938474,
+          0.053970450060717406,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.8770563968
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "METAL_WHITE",
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.992157,
+          0.992157,
+          0.992157,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.1229436032
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "COPPER",
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1.0,
+          0.30368100945730037,
+          0.22232376186523486,
+          1.0
+        ],
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.1051672704
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "LAMP_SHADE",
+      "normalTexture": {
+        "index": 2,
+        "texCoord": 1
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0.0,
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.8791684709
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "STEEL",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.5054543983643133,
+          0.5054543983643133,
+          0.5054543983643133,
+          1.0
+        ],
+        "roughnessFactor": 0.1364144804
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Plane001_FLOOR_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Frances_Tripod_Floor_Lamp_Copper_LIGHT_BULB_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 5,
+            "POSITION": 4,
+            "TEXCOORD_0": 6,
+            "TEXCOORD_1": 7
+          },
+          "indices": 8,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Frances_Tripod_Floor_Lamp_Copper_METAL_WHITE_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 10,
+            "POSITION": 9,
+            "TEXCOORD_0": 11,
+            "TEXCOORD_1": 12
+          },
+          "indices": 13,
+          "material": 2,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Frances_Tripod_Floor_Lamp_Copper_COPPER_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 15,
+            "POSITION": 14,
+            "TEXCOORD_0": 16,
+            "TEXCOORD_1": 17
+          },
+          "indices": 18,
+          "material": 3,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Frances_Tripod_Floor_Lamp_Copper_LAMP_SHADE_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 20,
+            "POSITION": 19,
+            "TANGENT": 21,
+            "TEXCOORD_0": 22,
+            "TEXCOORD_1": 23
+          },
+          "indices": 24,
+          "material": 4,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Frances_Tripod_Floor_Lamp_Copper_STEEL_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 26,
+            "POSITION": 25,
+            "TEXCOORD_0": 27,
+            "TEXCOORD_1": 28
+          },
+          "indices": 29,
+          "material": 5,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "69efc7c9402e41718a3a2c3d0e096c79.fbx"
+    },
+    {
+      "children": [
+        3,
+        5
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Plane001"
+    },
+    {
+      "mesh": 0,
+      "name": "Plane001_FLOOR_0"
+    },
+    {
+      "children": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "matrix": [
+        1.6191999912261963,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        3.595346223464349e-16,
+        -1.6191999912261963,
+        0.0,
+        0.0,
+        1.6191999912261963,
+        3.595346223464349e-16,
+        0.0,
+        0.0,
+        101.0381088256836,
+        4.3639283830998465e-06,
+        1.0
+      ],
+      "name": "Frances_Tripod_Floor_Lamp_Copper"
+    },
+    {
+      "mesh": 1,
+      "name": "Frances_Tripod_Floor_Lamp_Copper_LIGHT_BULB_0"
+    },
+    {
+      "mesh": 2,
+      "name": "Frances_Tripod_Floor_Lamp_Copper_METAL_WHITE_0"
+    },
+    {
+      "mesh": 3,
+      "name": "Frances_Tripod_Floor_Lamp_Copper_COPPER_0"
+    },
+    {
+      "mesh": 4,
+      "name": "Frances_Tripod_Floor_Lamp_Copper_LAMP_SHADE_0"
+    },
+    {
+      "mesh": 5,
+      "name": "Frances_Tripod_Floor_Lamp_Copper_STEEL_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

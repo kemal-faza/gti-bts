@@ -1,0 +1,11 @@
+Model Information:
+* title:	Ikea Kallax 2x4
+* source:	https://sketchfab.com/3d-models/ikea-kallax-2x4-c5d2789603fd48b9851261e8c37587f7
+* author:	Psychokiller1888 (https://sketchfab.com/Psychokiller1888)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Ikea Kallax 2x4" (https://sketchfab.com/3d-models/ikea-kallax-2x4-c5d2789603fd48b9851261e8c37587f7) by Psychokiller1888 (https://sketchfab.com/Psychokiller1888) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

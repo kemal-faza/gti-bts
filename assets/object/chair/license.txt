@@ -1,0 +1,11 @@
+Model Information:
+* title:	Kursi
+* source:	https://sketchfab.com/3d-models/kursi-4b2c95f72f4643f49237b57fc0200d99
+* author:	drecoooo (https://sketchfab.com/drecoooo)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Kursi" (https://sketchfab.com/3d-models/kursi-4b2c95f72f4643f49237b57fc0200d99) by drecoooo (https://sketchfab.com/drecoooo) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -113,7 +113,7 @@ static bool HandleGlobalKeys(unsigned char key)
 
 static void HandleEditKeys(unsigned char key)
 {
-    if (key >= '1' && key <= '9')
+    if (key >= '1' && key <= '8')
     {
         gState.selectedFurnitureType = key - '1';
         gState.titleDirty = true;
@@ -385,6 +385,7 @@ void InitGL()
     gState.currentLevel = 0;
 
     InitTextures();
+    LoadAllGLTFModels();
 
     glClearStencil(0);
     glClearColor(0.08f, 0.09f, 0.12f, 1.0f);

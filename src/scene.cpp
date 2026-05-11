@@ -4,6 +4,35 @@
 #include <GL/glu.h>
 #include <cstdio>
 #include <cmath>
+#include <cstring>
+
+// ── glTF model storage ──
+GLTFModel gGLTFModels[16];
+
+void LoadAllGLTFModels()
+{
+    struct { ObjectSubType subType; const char *dir; float targetSize; } models[] = {
+        {ObjectSubType::SOFA,        "assets/object/sofa",           2.5f},
+        {ObjectSubType::MEJA,        "assets/object/table",          2.0f},
+        {ObjectSubType::LEMARI,      "assets/object/cabinet",        1.4f},
+        {ObjectSubType::RAK,         "assets/object/shelf",          1.2f},
+        {ObjectSubType::KURSI,       "assets/object/chair",          1.0f},
+        {ObjectSubType::MEJA_BUNDAR, "assets/object/rounded-table",  1.5f},
+        {ObjectSubType::LAMPU,       "assets/object/lamp",           0.6f},
+        {ObjectSubType::KARPET,      "assets/object/carpet",         4.0f},
+        {ObjectSubType::KIPAS,       "assets/object/fan",            1.0f},
+    };
+
+    for (const auto &m : models)
+    {
+        int idx = static_cast<int>(m.subType);
+        if (!LoadGLTF(m.dir, gGLTFModels[idx], m.targetSize))
+            fprintf(stderr, "[Init] Failed to load glTF model: %s\n", m.dir);
+    }
+
+    fprintf(stdout, "[Init] Loaded %d glTF models\n",
+            static_cast<int>(sizeof(models) / sizeof(models[0])));
+}
 
 // ---------------------------------------------------------------------------
 //  Global definitions
@@ -217,10 +246,6 @@ void AddNewObjectInEditMode()
         type = ObjectType::CYLINDER; subType = ObjectSubType::LAMPU;
         material = MaterialType::ROUGH; cost = 6;
         break;
-    case 8: // TIKAR
-        type = ObjectType::ROAD; subType = ObjectSubType::TIKAR;
-        material = MaterialType::ROUGH; cost = 3;
-        break;
     default:
         type = ObjectType::CUBE; subType = ObjectSubType::MEJA;
         material = MaterialType::GLOSSY; cost = 10;
@@ -281,7 +306,6 @@ void GetBounds(const ObjectSubType subType,
     case ObjectSubType::MEJA_BUNDAR: halfX=0.75f; halfZ=0.75f; halfY=1.04f; break;
     case ObjectSubType::LAMPU:       halfX=0.22f; halfZ=0.22f; halfY=1.33f; break;
     case ObjectSubType::KARPET:      halfX=1.50f; halfZ=1.00f; halfY=0.04f; break;
-    case ObjectSubType::TIKAR:       halfX=1.00f; halfZ=0.60f; halfY=0.02f; break;
     case ObjectSubType::KIPAS:       halfX=0.12f; halfZ=0.12f; halfY=0.15f; break;
     default:
         // Fallback to legacy ObjectType-based — gunakan subType NONE
@@ -450,7 +474,6 @@ const char *GetSubTypeLabel(const ObjectSubType subType)
     case ObjectSubType::MEJA_BUNDAR: return "Meja Bundar";
     case ObjectSubType::LAMPU:       return "Lampu";
     case ObjectSubType::KARPET:      return "Karpet";
-    case ObjectSubType::TIKAR:       return "Tikar";
     case ObjectSubType::KIPAS:       return "Kipas";
     default:                         return "Objek";
     }

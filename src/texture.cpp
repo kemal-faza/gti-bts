@@ -107,26 +107,25 @@ void InitTextures()
 
     // ── Step 1: Load file textures ──
     struct { ObjectSubType subType; const char *path; } fileMappings[] = {
-        {ObjectSubType::SOFA,       "assets/fabric.png"},
-        {ObjectSubType::MEJA,       "assets/wood-grain.png"},
-        {ObjectSubType::LEMARI,     "assets/wood-grain.png"},
-        {ObjectSubType::RAK,        "assets/wood-grain.png"},
-        {ObjectSubType::KURSI,      "assets/fabric.png"},
-        {ObjectSubType::MEJA_BUNDAR,"assets/wood-grain.png"},
-        {ObjectSubType::LAMPU,      "assets/metal.png"},
-        {ObjectSubType::KARPET,     "assets/carpet.png"},
-        {ObjectSubType::TIKAR,      "assets/carpet.png"},
-        {ObjectSubType::KIPAS,      "assets/metal.png"},
+        {ObjectSubType::SOFA,       "assets/texture/fabric.png"},
+        {ObjectSubType::MEJA,       "assets/texture/wood-grain.png"},
+        {ObjectSubType::LEMARI,     "assets/texture/wood-grain.png"},
+        {ObjectSubType::RAK,        "assets/texture/wood-grain.png"},
+        {ObjectSubType::KURSI,      "assets/texture/fabric.png"},
+        {ObjectSubType::MEJA_BUNDAR,"assets/texture/wood-grain.png"},
+        {ObjectSubType::LAMPU,      "assets/texture/metal.png"},
+        {ObjectSubType::KARPET,     "assets/texture/carpet.png"},
+        {ObjectSubType::KIPAS,      "assets/texture/metal.png"},
     };
 
     for (const auto &m : fileMappings)
         gTextures[static_cast<int>(m.subType)] = LoadTextureFromFile(m.path);
 
     // Floor texture
-    gFloorTexture = LoadTextureFromFile("assets/wood-floor.png");
+    gFloorTexture = LoadTextureFromFile("assets/texture/wood-floor.png");
 
     // Wall texture
-    gWallTexture = LoadTextureFromFile("assets/wall.png");
+    gWallTexture = LoadTextureFromFile("assets/texture/wall.png");
 
     // ── Step 2: Fallback procedural untuk yang gagal load ──
     struct { ObjectSubType subType; int ck; GLubyte r1,g1,b1, r2,g2,b2; } fallback[] = {
@@ -138,7 +137,6 @@ void InitTextures()
         {ObjectSubType::MEJA_BUNDAR, 4, 190,160,130, 150,120,90},
         {ObjectSubType::LAMPU,       2, 240,210,100, 200,170,60},
         {ObjectSubType::KARPET,      8, 210,110,70,  230,190,150},
-        {ObjectSubType::TIKAR,       6, 180,200,140, 140,160,100},
         {ObjectSubType::KIPAS,       2, 200,200,200, 150,150,150},
     };
 

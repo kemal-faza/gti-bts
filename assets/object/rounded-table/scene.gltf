@@ -1,0 +1,539 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4889,
+      "max": [
+        55.08595657348633,
+        54.9542350769043,
+        74.05990600585938
+      ],
+      "min": [
+        -55.144474029541016,
+        -55.251312255859375,
+        -0.07015228271484375
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 58668,
+      "componentType": 5126,
+      "count": 4889,
+      "max": [
+        0.9999445080757141,
+        0.9999914765357971,
+        1.0
+      ],
+      "min": [
+        -0.9999446272850037,
+        -0.9999998211860657,
+        -1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4889,
+      "max": [
+        21.343666076660156,
+        0.8447782397270203
+      ],
+      "min": [
+        0.04909157752990723,
+        0.017070718109607697
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 39112,
+      "componentType": 5126,
+      "count": 4889,
+      "max": [
+        1.6032904386520386,
+        1.60331392288208
+      ],
+      "min": [
+        -0.6032904386520386,
+        -0.603408694267273
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 78224,
+      "componentType": 5126,
+      "count": 4889,
+      "max": [
+        21.343666076660156,
+        0.8447782397270203
+      ],
+      "min": [
+        0.04909157752990723,
+        0.017070718109607697
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 19632,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 117336,
+      "componentType": 5126,
+      "count": 2076,
+      "max": [
+        32.64033508300781,
+        32.57716369628906,
+        71.19622039794922
+      ],
+      "min": [
+        -32.6988410949707,
+        -32.56379318237305,
+        56.90343475341797
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 142248,
+      "componentType": 5126,
+      "count": 2076,
+      "max": [
+        0.9953275322914124,
+        0.9953595399856567,
+        0.9999997019767761
+      ],
+      "min": [
+        -0.9953275918960571,
+        -0.9953595399856567,
+        -0.9999993443489075
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 117336,
+      "componentType": 5126,
+      "count": 2076,
+      "max": [
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 133944,
+      "componentType": 5126,
+      "count": 2076,
+      "max": [
+        1.1528633832931519,
+        1.182917594909668
+      ],
+      "min": [
+        -0.1528635025024414,
+        -0.14785706996917725
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 78528,
+      "componentType": 5125,
+      "count": 4800,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 167160,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        241.4281005859375,
+        238.02359008789063,
+        0.0
+      ],
+      "min": [
+        -241.4281005859375,
+        -244.83253479003906,
+        0.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 167208,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 150552,
+      "componentType": 5126,
+      "count": 4,
+      "max": [
+        0.9999999403953552,
+        0.9607635140419006
+      ],
+      "min": [
+        6.581682754358553e-08,
+        0.026055818423628807
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 97728,
+      "componentType": 5125,
+      "count": 6,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "MADE.COM (https://sketchfab.com/made-it)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/edelweiss-round-table-ash-and-white-8e0a7e9e9d0842b381aa713b74412eec",
+      "title": "Edelweiss Round Table, Ash and White"
+    },
+    "generator": "Sketchfab-12.68.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 97752,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 150584,
+      "byteOffset": 97752,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 167256,
+      "byteOffset": 248336,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 415592,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/WALNUT_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/BLACK_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/FLOOR_baseColor.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "WALNUT",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.17244664634146342,
+        "roughnessFactor": 0.23951981707317074
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "BLACK",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.8834365490119371,
+          0.8834365490119371,
+          0.8834365490119371,
+          1.0
+        ],
+        "metallicFactor": 0.2456173780487805,
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.5626905487804879
+      }
+    },
+    {
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "name": "FLOOR",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.17310594512195118,
+          0.17310594512195118,
+          0.17310594512195118,
+          1.0
+        ],
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0.209032012195122,
+        "metallicRoughnessTexture": {
+          "index": 1
+        },
+        "roughnessFactor": 0.45293445121951226
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Edelweiss_Round_Dining_Table_Walnut_and_Black_WALNUT_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2,
+            "TEXCOORD_1": 3,
+            "TEXCOORD_2": 4
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Edelweiss_Round_Dining_Table_Walnut_and_Black_BLACK_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 7,
+            "POSITION": 6,
+            "TEXCOORD_0": 8,
+            "TEXCOORD_1": 9
+          },
+          "indices": 10,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "Plane001_FLOOR_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 12,
+            "POSITION": 11,
+            "TEXCOORD_0": 13
+          },
+          "indices": 14,
+          "material": 2,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "4bc2bd8651b545cf9e00cac0ec44a01f.fbx"
+    },
+    {
+      "children": [
+        3,
+        7
+      ],
+      "name": "RootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        36.91735076904297,
+        0.0,
+        1.0
+      ],
+      "name": "Edelweiss_Round_Dining_Table_Walnut_and_Black"
+    },
+    {
+      "children": [
+        5,
+        6
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        -0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.029256820678710938,
+        0.1456127166748047,
+        -36.99488830566406,
+        1.0
+      ],
+      "name": "Object_4"
+    },
+    {
+      "mesh": 0,
+      "name": "Edelweiss_Round_Dining_Table_Walnut_and_Black_WALNUT_0"
+    },
+    {
+      "mesh": 1,
+      "name": "Edelweiss_Round_Dining_Table_Walnut_and_Black_BLACK_0"
+    },
+    {
+      "children": [
+        8
+      ],
+      "matrix": [
+        0.625058650970459,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.387909012097086e-16,
+        -0.625058650970459,
+        0.0,
+        0.0,
+        0.625058650970459,
+        1.387909012097086e-16,
+        0.0,
+        0.3949718475341797,
+        0.0,
+        -0.7628276348114014,
+        1.0
+      ],
+      "name": "Plane001"
+    },
+    {
+      "mesh": 2,
+      "name": "Plane001_FLOOR_0"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

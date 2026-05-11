@@ -8,6 +8,18 @@
 #include <cmath>
 #include <cstdio>
 
+// ── Font selection helpers (pixelZoom-free) ──
+static void *PickHeadingFont()
+{
+    return (gWindowHeight >= 600) ? (void *)GLUT_BITMAP_TIMES_ROMAN_24
+                                  : (void *)GLUT_BITMAP_HELVETICA_18;
+}
+static void *PickBodyFont()
+{
+    return (gWindowHeight >= 600) ? (void *)GLUT_BITMAP_HELVETICA_18
+                                  : (void *)GLUT_BITMAP_HELVETICA_12;
+}
+
 // ---------------------------------------------------------------------------
 //  Shading / depth helpers
 // ---------------------------------------------------------------------------
@@ -222,259 +234,43 @@ static void DrawTexturedCube(const float size)
     glEnd();
 }
 
-// ---------------------------------------------------------------------------
-//  Furniture composite drawing (minimalist modern)
-// ---------------------------------------------------------------------------
 
-static void DrawTable()
-{
-    // Table top: 2.0 x 0.1 x 1.2
-    glPushMatrix();
-    glTranslatef(0.0f, 0.95f, 0.0f);
-    glScalef(2.0f, 0.1f, 1.2f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // 4 legs
-    const float legH = 0.95f;
-    const float legR = 0.05f;
-    const float lx = 0.85f;
-    const float lz = 0.50f;
-    for (int i = 0; i < 4; ++i)
-    {
-        float x = (i == 0 || i == 3) ? lx : -lx;
-        float z = (i < 2) ? -lz : lz;
-        glPushMatrix();
-        glTranslatef(x, 0.0f, z);
-        DrawCylinderPrimitive(legR, legH);
-        glPopMatrix();
-    }
-}
-
-static void DrawSofa()
-{
-    // Seat: 2.2 x 0.35 x 0.9
-    glPushMatrix();
-    glTranslatef(0.0f, 0.175f, 0.0f);
-    glScalef(2.2f, 0.35f, 0.9f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // Backrest: 2.2 x 0.55 x 0.15
-    glPushMatrix();
-    glTranslatef(0.0f, 0.525f, -0.375f);
-    glScalef(2.2f, 0.55f, 0.15f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // Armrests
-    for (int side = -1; side <= 1; side += 2)
-    {
-        glPushMatrix();
-        glTranslatef(side * 1.025f, 0.275f, 0.0f);
-        glScalef(0.15f, 0.45f, 0.9f);
-        DrawTexturedCube(1.0f);
-        glPopMatrix();
-    }
-
-    // Legs
-    const float legH = 0.10f;
-    const float legR = 0.04f;
-    const float lx = 0.95f;
-    const float lz = 0.375f;
-    for (int i = 0; i < 4; ++i)
-    {
-        float x = (i == 0 || i == 3) ? lx : -lx;
-        float z = (i < 2) ? -lz : lz;
-        glPushMatrix();
-        glTranslatef(x, 0.0f, z);
-        DrawCylinderPrimitive(legR, legH);
-        glPopMatrix();
-    }
-}
-
-static void DrawChair()
-{
-    // Seat: 0.4 x 0.08 x 0.4
-    glPushMatrix();
-    glTranslatef(0.0f, 0.50f, 0.0f);
-    glScalef(0.4f, 0.08f, 0.4f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // Backrest: 0.4 x 0.50 x 0.08
-    glPushMatrix();
-    glTranslatef(0.0f, 0.75f, -0.23f);
-    glScalef(0.4f, 0.50f, 0.08f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // Legs
-    const float legH = 0.50f;
-    const float legR = 0.04f;
-    const float l = 0.16f;
-    for (int i = 0; i < 4; ++i)
-    {
-        float x = (i == 0 || i == 3) ? l : -l;
-        float z = (i < 2) ? -l : l;
-        glPushMatrix();
-        glTranslatef(x, 0.0f, z);
-        DrawCylinderPrimitive(legR, legH);
-        glPopMatrix();
-    }
-}
-
-static void DrawWardrobe()
-{
-    // Body: 1.4 x 2.4 x 0.55
-    glPushMatrix();
-    glTranslatef(0.0f, 1.20f, 0.0f);
-    glScalef(1.4f, 2.4f, 0.55f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-
-    // Doors
-    for (int side = -1; side <= 1; side += 2)
-    {
-        glPushMatrix();
-        glTranslatef(side * 0.33f, 1.20f, 0.295f);
-        glScalef(0.65f, 2.2f, 0.04f);
-        DrawTexturedCube(1.0f);
-        glPopMatrix();
-    }
-
-    // Handles
-    for (int side = -1; side <= 1; side += 2)
-    {
-        glPushMatrix();
-        glTranslatef(side * 0.15f, 1.20f, 0.33f);
-        glutSolidSphere(0.04f, 12, 12);
-        glPopMatrix();
-    }
-}
-
-static void DrawShelf()
-{
-    // Vertical frames
-    for (int side = -1; side <= 1; side += 2)
-    {
-        glPushMatrix();
-        glTranslatef(side * 0.65f, 0.70f, 0.0f);
-        glScalef(0.05f, 1.4f, 0.05f);
-        DrawTexturedCube(1.0f);
-        glPopMatrix();
-    }
-
-    // Shelves
-    const float shelfY[3] = {0.30f, 0.70f, 1.10f};
-    for (int i = 0; i < 3; ++i)
-    {
-        glPushMatrix();
-        glTranslatef(0.0f, shelfY[i], 0.0f);
-        glScalef(1.3f, 0.04f, 0.35f);
-        DrawTexturedCube(1.0f);
-        glPopMatrix();
-    }
-}
-
-static void DrawRoundTable()
-{
-    // Top
-    glPushMatrix();
-    glTranslatef(0.0f, 0.96f, 0.0f);
-    DrawCylinderPrimitive(0.75f, 0.08f);
-    glPopMatrix();
-
-    // Pedestal
-    glPushMatrix();
-    glTranslatef(0.0f, 0.48f, 0.0f);
-    DrawCylinderPrimitive(0.12f, 0.96f);
-    glPopMatrix();
-
-    // Base
-    glPushMatrix();
-    glTranslatef(0.0f, 0.02f, 0.0f);
-    DrawCylinderPrimitive(0.40f, 0.04f);
-    glPopMatrix();
-}
-
-static void DrawLamp()
-{
-    // Base
-    glPushMatrix();
-    glTranslatef(0.0f, 0.03f, 0.0f);
-    DrawCylinderPrimitive(0.22f, 0.06f);
-    glPopMatrix();
-
-    // Stand
-    glPushMatrix();
-    glTranslatef(0.0f, 0.53f, 0.0f);
-    DrawCylinderPrimitive(0.035f, 1.00f);
-    glPopMatrix();
-
-    // Shade — dengan emission glow berdenyut
-    const float glow = 0.3f + 0.2f * std::sin(gAnimTime * 2.5f);
-    const GLfloat ambient[]  = {0.15f, 0.10f, 0.05f, 1.0f};
-    const GLfloat diffuse[]  = {0.80f, 0.60f, 0.30f, 1.0f};
-    const GLfloat emission[] = {glow, glow * 0.6f, glow * 0.2f, 1.0f};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  diffuse);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-
-    glPushMatrix();
-    glTranslatef(0.0f, 1.13f, 0.0f);
-    DrawCylinderPrimitive(0.18f, 0.20f);
-    glPopMatrix();
-
-    // Reset emission
-    const GLfloat noEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, noEmission);
-}
-
-static void DrawCarpet()
-{
-    glPushMatrix();
-    glTranslatef(0.0f, 0.02f, 0.0f);
-    glScalef(3.0f, 0.04f, 2.0f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-}
-
-static void DrawMat()
-{
-    glPushMatrix();
-    glTranslatef(0.0f, 0.01f, 0.0f);
-    glScalef(2.0f, 0.02f, 1.2f);
-    DrawTexturedCube(1.0f);
-    glPopMatrix();
-}
-
-static void DrawCeilingFan()
-{
-    // Motor housing
-    glPushMatrix();
-    glTranslatef(0.0f, -0.075f, 0.0f);
-    DrawCylinderPrimitive(0.12f, 0.15f);
-    glPopMatrix();
-
-    // Blades — berputar terus berdasarkan anim time
-    const float spinAngle = std::fmod(gAnimTime * 120.0f, 360.0f);
-    for (int i = 0; i < 3; ++i)
-    {
-        float angle = static_cast<float>(i) * 120.0f + spinAngle;
-        glPushMatrix();
-        glRotatef(angle, 0.0f, 1.0f, 0.0f);
-        glTranslatef(0.5f, -0.02f, 0.0f);
-        glScalef(1.0f, 0.02f, 0.12f);
-        DrawTexturedCube(1.0f);
-        glPopMatrix();
-    }
-}
 
 static bool s_shadowPass = false;
 
 void DrawObjectGeometry(const SceneObject &obj)
 {
+    // ── glTF furniture models ──
+    int idx = static_cast<int>(obj.subType);
+    if (idx > 0 && idx < 16 && !gGLTFModels[idx].primitives.empty())
+    {
+        // Handle lamp emission glow
+        if (obj.subType == ObjectSubType::LAMPU && !s_shadowPass)
+        {
+            const float glow = 0.3f + 0.2f * std::sin(gAnimTime * 2.5f);
+            const GLfloat emission[] = {glow, glow * 0.6f, glow * 0.2f, 1.0f};
+            glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
+        }
+
+        // Fan rotation animation — spin whole model around Y
+        if (obj.subType == ObjectSubType::KIPAS && !s_shadowPass)
+        {
+            const float spinAngle = std::fmod(gAnimTime * 120.0f, 360.0f);
+            glRotatef(spinAngle, 0.0f, 1.0f, 0.0f);
+        }
+
+        DrawGLTFModel(gGLTFModels[idx]);
+
+        // Reset emission after lamp
+        if (obj.subType == ObjectSubType::LAMPU && !s_shadowPass)
+        {
+            const GLfloat noEmission[] = {0.0f, 0.0f, 0.0f, 1.0f};
+            glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, noEmission);
+        }
+        return;
+    }
+
+    // ── Fallback for primitive types ──
     // Bind texture if available (skip during shadow pass)
     GLuint tex = 0;
     if (!s_shadowPass)
@@ -486,35 +282,20 @@ void DrawObjectGeometry(const SceneObject &obj)
         glBindTexture(GL_TEXTURE_2D, tex);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-        // Override material to prevent texture darkening
         GLfloat whiteAmb[] = {0.6f, 0.6f, 0.6f, 1.0f};
         GLfloat whiteDif[] = {1.0f, 1.0f, 1.0f, 1.0f};
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  whiteAmb);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  whiteDif);
     }
 
-    switch (obj.subType)
+    switch (obj.type)
     {
-    case ObjectSubType::MEJA:        DrawTable();       break;
-    case ObjectSubType::SOFA:        DrawSofa();        break;
-    case ObjectSubType::KURSI:       DrawChair();       break;
-    case ObjectSubType::LEMARI:      DrawWardrobe();    break;
-    case ObjectSubType::RAK:         DrawShelf();       break;
-    case ObjectSubType::MEJA_BUNDAR: DrawRoundTable();  break;
-    case ObjectSubType::LAMPU:       DrawLamp();        break;
-    case ObjectSubType::KARPET:      DrawCarpet();      break;
-    case ObjectSubType::TIKAR:       DrawMat();         break;
-    case ObjectSubType::KIPAS:       DrawCeilingFan();  break;
-    default:
-        switch (obj.type)
-        {
-        case ObjectType::CUBE:     DrawTexturedCube(2.0f); break;
-        case ObjectType::CYLINDER: DrawCylinderPrimitive(0.7f, 2.2f); break;
-        case ObjectType::ROAD:
-            glScalef(6.0f, 0.24f, 3.0f);
-            DrawTexturedCube(1.0f);
-            break;
-        }
+    case ObjectType::CUBE:     DrawTexturedCube(2.0f); break;
+    case ObjectType::CYLINDER: DrawCylinderPrimitive(0.7f, 2.2f); break;
+    case ObjectType::ROAD:
+        glScalef(6.0f, 0.24f, 3.0f);
+        DrawTexturedCube(1.0f);
+        break;
     }
 
     if (tex != 0)
@@ -890,10 +671,8 @@ void RenderHUD()
 {
     PushOverlayOrtho();
 
-    // Auto-scale font based on window height (capped agar tidak overflow)
-    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
-    const float zoom = (fontScale < 1.0f) ? 1.0f : ((fontScale > 1.6f) ? 1.6f : fontScale);
-    glPixelZoom(zoom, zoom);
+    void *headingFont = PickHeadingFont();
+    void *bodyFont    = PickBodyFont();
 
     // ── Background semi-transparan (fixed size) ──
     glEnable(GL_BLEND);
@@ -912,7 +691,7 @@ void RenderHUD()
 
     SetColor(1.0f, 1.0f, 1.0f);
     std::snprintf(buf, sizeof(buf), "Level %d: %s", level.levelNumber, level.roomName);
-    RenderString(10, 20, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10, 20, headingFont, buf);
 
     // Budget
     int spent = 0;
@@ -925,7 +704,7 @@ void RenderHUD()
         SetColor(1.0f, 0.2f, 0.2f);
 
     std::snprintf(buf, sizeof(buf), "Budget: %d / %d", spent, level.budget);
-    RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10, 40, bodyFont, buf);
 
     // Checklist — item wajib
     SetColor(0.8f, 0.8f, 1.0f);
@@ -949,46 +728,48 @@ void RenderHUD()
         const char *label = GetSubTypeLabel(req.subType);
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
-        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18, buf);
+        RenderString(10, static_cast<float>(lineY), bodyFont, buf);
         lineY += 24;
     }
 
     // ── Furniture Selection ──
     lineY += 8;
     SetColor(0.55f, 0.55f, 0.55f);
-    RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
-                 "--- Furniture (1-9) ---");
+    RenderString(10, static_cast<float>(lineY), bodyFont,
+                 "--- Furniture (1-8) ---");
     lineY += 24;
 
     const char *furnitureNames[] = {
         "1. Meja", "2. Sofa", "3. Kursi",
         "4. Meja Bundar", "5. Lemari", "6. Rak",
-        "7. Karpet", "8. Lampu", "9. Tikar"
+        "7. Karpet", "8. Lampu"
     };
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         if (i == gState.selectedFurnitureType)
             SetColor(1.0f, 1.0f, 1.0f);
         else
             SetColor(0.65f, 0.65f, 0.65f);
 
-        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
+        RenderString(10, static_cast<float>(lineY), bodyFont,
                      furnitureNames[i]);
         lineY += 20;
     }
 
     // Petunjuk
     SetColor(0.6f, 0.6f, 0.6f);
-    RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_18,
+    RenderString(10, static_cast<float>(gWindowHeight) - 32, bodyFont,
                  "Enter = Submit | Tab = Edit/View | Esc = Menu | Q/E = Rotate");
 
-    glPixelZoom(1.0f, 1.0f);
     PopOverlayOrtho();
 }
 
 void RenderOverlay()
 {
     PushOverlayOrtho();
+
+    void *headingFont = PickHeadingFont();
+    void *bodyFont    = PickBodyFont();
 
     // Semi-transparent dark overlay
     glEnable(GL_BLEND);
@@ -1002,11 +783,6 @@ void RenderOverlay()
     glEnd();
     glDisable(GL_BLEND);
 
-    // Auto-scale font based on window height
-    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
-    const float zoom = (fontScale < 1.0f) ? 1.0f : ((fontScale > 1.6f) ? 1.6f : fontScale);
-    glPixelZoom(zoom, zoom);
-
     const int cx = gWindowWidth / 2;
     const int cy = gWindowHeight / 2;
     char buf[256];
@@ -1018,79 +794,78 @@ void RenderOverlay()
         SetColor(0.3f, 0.6f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Interior Designer - Room %d", level.levelNumber);
         RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) - 80,
-                     GLUT_BITMAP_TIMES_ROMAN_24, buf);
+                     headingFont, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
         RenderStringMultiline(static_cast<float>(cx) - 140, static_cast<float>(cy) - 40,
-                              GLUT_BITMAP_HELVETICA_18, level.clientBrief);
+                              bodyFont, level.clientBrief);
 
         SetColor(0.2f, 1.0f, 0.2f);
         RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 60,
-                     GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Mulai");
+                     headingFont, "[ Enter ] - Mulai");
 
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 85,
-                     GLUT_BITMAP_HELVETICA_18, "Esc = Keluar");
+                     bodyFont, "Esc = Keluar");
     }
     else if (gState.gameState == GameState::WIN)
     {
         SetColor(0.2f, 1.0f, 0.2f);
         std::snprintf(buf, sizeof(buf), " SELESAI! ");
         RenderString(static_cast<float>(cx) - 60, static_cast<float>(cy) - 40,
-                     GLUT_BITMAP_TIMES_ROMAN_24, buf);
+                     headingFont, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Budget terpakai: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
         RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
-                     GLUT_BITMAP_HELVETICA_18, buf);
+                     bodyFont, buf);
 
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
             RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 50,
-                         GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Lanjut Level");
+                         headingFont, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
             RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 50,
-                         GLUT_BITMAP_TIMES_ROMAN_24, "Semua Level Selesai!");
+                         headingFont, "Semua Level Selesai!");
         }
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
-                     GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
+                     bodyFont, "Esc = Menu Utama");
     }
     else if (gState.gameState == GameState::LOSE)
     {
         SetColor(1.0f, 0.2f, 0.2f);
         RenderString(static_cast<float>(cx) - 50, static_cast<float>(cy) - 40,
-                     GLUT_BITMAP_TIMES_ROMAN_24, " GAGAL ");
+                     headingFont, " GAGAL ");
 
         SetColor(1.0f, 1.0f, 1.0f);
         if (gState.failReason[0] != '\0')
         {
             RenderString(static_cast<float>(cx) - 140, static_cast<float>(cy) + 20,
-                         GLUT_BITMAP_HELVETICA_18, gState.failReason);
+                         bodyFont, gState.failReason);
         }
         else
         {
             std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
                           gState.totalSpent, GetCurrentLevel().budget);
             RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
-                         GLUT_BITMAP_HELVETICA_18, buf);
+                         bodyFont, buf);
         }
 
         SetColor(0.2f, 1.0f, 0.2f);
         RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 50,
-                     GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Coba Lagi");
+                     headingFont, "[ Enter ] - Coba Lagi");
 
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
-                      GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
+                     bodyFont, "Esc = Menu Utama");
     }
 
-    glPixelZoom(1.0f, 1.0f);
     PopOverlayOrtho();
 }
 

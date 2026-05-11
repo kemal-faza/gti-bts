@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "gltf_loader.h"
 
 // ---------------------------------------------------------------------------
 //  Enums
@@ -44,7 +45,6 @@ enum class ObjectSubType
     MEJA_BUNDAR,
     LAMPU,
     KARPET,
-    TIKAR,
     KIPAS
 };
 
@@ -135,6 +135,11 @@ extern std::vector<SceneObject> gSceneObjects;
 extern std::vector<LevelData> gLevels;
 extern bool gKeyDown[256];
 extern float gAnimTime;
+
+// glTF model storage — indexed by static_cast<int>(ObjectSubType)
+// Only entries SOFA..KIPAS are populated; others are empty.
+extern GLTFModel gGLTFModels[16];
+void LoadAllGLTFModels();
 
 // ---------------------------------------------------------------------------
 //  Constants
