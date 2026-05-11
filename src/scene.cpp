@@ -137,27 +137,18 @@ void SelectAdjacentObject(const int direction)
     gState.selectedObjectIndex = idx;
 }
 
-void AddSceneObject(const ObjectType type, const MaterialType material,
-                    const Vec3 position, const float rotationY)
+void AddSceneObject(const ObjectType type, const ObjectSubType subType,
+                    const MaterialType material, const Vec3 position,
+                    const float rotationY, const int cost)
 {
     SceneObject obj;
     obj.type     = type;
+    obj.subType  = subType;
     obj.material = material;
     obj.position = position;
     obj.rotationY = rotationY;
+    obj.cost     = cost;
     gSceneObjects.push_back(obj);
-}
-
-void InitializeSceneData()
-{
-    gSceneObjects.clear();
-
-    AddSceneObject(ObjectType::ROAD,     MaterialType::ROUGH,  {0.0f, 0.12f, 0.0f}, 0.0f);
-    AddSceneObject(ObjectType::CUBE,     MaterialType::GLOSSY, {0.0f, 1.0f,  0.0f}, 0.0f);
-    AddSceneObject(ObjectType::CYLINDER, MaterialType::ROUGH,  {4.0f, 0.0f,  2.0f}, 0.0f);
-
-    gState.selectedObjectIndex = 1;
-    SetPerspectivePreset(CameraPreset::ONE_POINT);
 }
 
 void AddNewObjectInEditMode()
@@ -165,8 +156,10 @@ void AddNewObjectInEditMode()
     if (gState.activeMode != AppMode::EDIT_ORTHO) return;
 
     const int pattern = static_cast<int>(gSceneObjects.size()) % 3;
-    ObjectType type     = ObjectType::CUBE;
+    ObjectType type      = ObjectType::CUBE;
+    ObjectSubType subType = ObjectSubType::MEJA;
     MaterialType material = MaterialType::GLOSSY;
+    int cost = 15;
     Vec3 position = {0.0f, 1.0f, 0.0f};
 
     if (SceneObject *selected = GetSelectedObject())
@@ -178,23 +171,29 @@ void AddNewObjectInEditMode()
     if (pattern == 1)
     {
         type     = ObjectType::CYLINDER;
+        subType  = ObjectSubType::MEJA_BUNDAR;
         material = MaterialType::ROUGH;
+        cost     = 8;
         position.y = 0.0f;
     }
     else if (pattern == 2)
     {
         type     = ObjectType::ROAD;
+        subType  = ObjectSubType::KARPET;
         material = MaterialType::ROUGH;
+        cost     = 5;
         position.y = 0.12f;
     }
     else
     {
         type     = ObjectType::CUBE;
+        subType  = ObjectSubType::MEJA;
         material = MaterialType::GLOSSY;
+        cost     = 15;
         position.y = 1.0f;
     }
 
-    AddSceneObject(type, material, position, 0.0f);
+    AddSceneObject(type, subType, material, position, 0.0f, cost);
     gState.selectedObjectIndex = static_cast<int>(gSceneObjects.size()) - 1;
     ClampSelectedObject();
 }
@@ -212,17 +211,6 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
 // ---------------------------------------------------------------------------
 //  Game system — level data + submission
 // ---------------------------------------------------------------------------
-
-int GetObjectCost(const ObjectType type)
-{
-    switch (type)
-    {
-    case ObjectType::CUBE:     return 10;
-    case ObjectType::CYLINDER: return 8;
-    case ObjectType::ROAD:     return 5;
-    }
-    return 0;
-}
 
 void InitializeLevels()
 {
@@ -283,7 +271,7 @@ GameState EvaluateSubmission()
     // Hitung total cost
     int spent = 0;
     for (const auto &obj : gSceneObjects)
-        spent += GetObjectCost(obj.type);
+        spent += obj.cost;
     gState.totalSpent = spent;
 
     const LevelData &level = GetCurrentLevel();
@@ -326,4 +314,22 @@ GameState EvaluateSubmission()
     // WIN
     gState.finalScore = 100;
     return GameState::WIN;
+}
+
+const char *GetSubTypeLabel(const ObjectSubType subType)
+{
+    switch (subType)
+    {
+    case ObjectSubType::SOFA:        return "Sofa";
+    case ObjectSubType::MEJA:        return "Meja";
+    case ObjectSubType::LEMARI:      return "Lemari";
+    case ObjectSubType::RAK:         return "Rak";
+    case ObjectSubType::KURSI:       return "Kursi";
+    case ObjectSubType::MEJA_BUNDAR: return "Meja Bundar";
+    case ObjectSubType::LAMPU:       return "Lampu";
+    case ObjectSubType::KARPET:      return "Karpet";
+    case ObjectSubType::TIKAR:       return "Tikar";
+    case ObjectSubType::KIPAS:       return "Kipas";
+    default:                         return "Objek";
+    }
 }

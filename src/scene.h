@@ -70,9 +70,12 @@ struct Vec3
 struct SceneObject
 {
     ObjectType type;
+    ObjectSubType subType = ObjectSubType::NONE;
     Vec3 position;
     float rotationY;
     MaterialType material;
+    int cost = 0;
+    bool isAnimated = false;
 };
 
 struct LevelRequirement
@@ -160,12 +163,13 @@ void SetOrbitFromEyeTarget(Vec3 eye, Vec3 target);
 void SetPerspectivePreset(CameraPreset preset);
 
 void SelectAdjacentObject(int direction);
-void AddSceneObject(ObjectType type, MaterialType material, Vec3 position, float rotationY);
-void InitializeSceneData();
+void AddSceneObject(ObjectType type, ObjectSubType subType,
+                    MaterialType material, Vec3 position,
+                    float rotationY, int cost);
 void AddNewObjectInEditMode();
 void MoveSelectedObject(float deltaX, float deltaZ);
 
-int  GetObjectCost(ObjectType type);
 void InitializeLevels();
 const LevelData &GetCurrentLevel();
 GameState EvaluateSubmission();
+const char *GetSubTypeLabel(ObjectSubType subType);

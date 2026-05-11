@@ -316,7 +316,7 @@ void RenderHUD()
     // Budget
     int spent = 0;
     for (const auto &obj : gSceneObjects)
-        spent += GetObjectCost(obj.type);
+        spent += obj.cost;
 
     if (spent <= level.budget)
         SetColor(0.2f, 1.0f, 0.2f);
