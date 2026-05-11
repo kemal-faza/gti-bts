@@ -216,10 +216,15 @@ static void DrawTexturedCube(const float size)
     glEnd();
 }
 
+static bool s_shadowPass = false;
+
 void DrawObjectGeometry(const SceneObject &obj)
 {
-    // Bind texture if available
-    GLuint tex = GetTextureForSubType(obj.subType);
+    // Bind texture if available (skip during shadow pass)
+    GLuint tex = 0;
+    if (!s_shadowPass)
+        tex = GetTextureForSubType(obj.subType);
+
     if (tex != 0)
     {
         glEnable(GL_TEXTURE_2D);
@@ -272,6 +277,56 @@ void DrawGrid()
 }
 
 // ---------------------------------------------------------------------------
+//  Room visuals (walls + floor)
+// ---------------------------------------------------------------------------
+
+void DrawRoom()
+{
+    const GLboolean wasLighting = glIsEnabled(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    const float h = 3.0f; // wall height
+
+    // Floor — semi-transparan solid color
+    glColor4f(0.20f, 0.22f, 0.25f, 0.60f);
+    glBegin(GL_QUADS);
+    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
+    glEnd();
+
+    // Walls — wireframe outline untuk visibilitas
+    glColor4f(0.50f, 0.55f, 0.65f, 0.35f);
+    glBegin(GL_QUADS);
+    // Back wall (z = -kRoomSize)
+    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, h, -kRoomSize);
+    glVertex3f(-kRoomSize, h, -kRoomSize);
+    // Front wall (z = +kRoomSize)
+    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f( kRoomSize, h,  kRoomSize);
+    glVertex3f(-kRoomSize, h,  kRoomSize);
+    // Left wall (x = -kRoomSize)
+    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f(-kRoomSize, h,  kRoomSize);
+    glVertex3f(-kRoomSize, h, -kRoomSize);
+    // Right wall (x = +kRoomSize)
+    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
+    glVertex3f( kRoomSize, h,  kRoomSize);
+    glVertex3f( kRoomSize, h, -kRoomSize);
+    glEnd();
+
+    glDisable(GL_BLEND);
+    if (wasLighting) glEnable(GL_LIGHTING);
+}
 //  Scene rendering
 // ---------------------------------------------------------------------------
 
@@ -373,6 +428,9 @@ void RenderShadows()
 
     glColor4f(0.0f, 0.0f, 0.0f, 0.40f);
 
+    s_shadowPass = true;
+    glDisable(GL_DEPTH_TEST);
+
     for (const auto &obj : gSceneObjects)
     {
         glPushMatrix();
@@ -384,6 +442,9 @@ void RenderShadows()
         DrawObjectGeometry(obj);
         glPopMatrix();
     }
+
+    glEnable(GL_DEPTH_TEST);
+    s_shadowPass = false;
 
     if (!wasBlend) glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
@@ -448,7 +509,7 @@ void RenderHUD()
 
     SetColor(1.0f, 1.0f, 1.0f);
     std::snprintf(buf, sizeof(buf), "Level %d: %s", level.levelNumber, level.roomName);
-    RenderString(10, 20, GLUT_BITMAP_HELVETICA_18, buf);
+    RenderString(10, 20, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Budget
     int spent = 0;
@@ -461,11 +522,11 @@ void RenderHUD()
         SetColor(1.0f, 0.2f, 0.2f);
 
     std::snprintf(buf, sizeof(buf), "Budget: %d / %d", spent, level.budget);
-    RenderString(10, 40, GLUT_BITMAP_HELVETICA_18, buf);
+    RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Checklist — item wajib
     SetColor(0.8f, 0.8f, 1.0f);
-    int lineY = 64;
+    int lineY = 80;
     for (const auto &req : level.requiredItems)
     {
         int count = 0;
@@ -494,13 +555,13 @@ void RenderHUD()
         }
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
-        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_12, buf);
-        lineY += 16;
+        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18, buf);
+        lineY += 24;
     }
 
     // Petunjuk
     SetColor(0.6f, 0.6f, 0.6f);
-    RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_12,
+    RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_18,
                  "Enter = Submit | Tab = Edit/View | Esc = Menu");
 
     PopOverlayOrtho();
@@ -537,15 +598,15 @@ void RenderOverlay()
 
         SetColor(1.0f, 1.0f, 1.0f);
         RenderStringMultiline(static_cast<float>(cx) - 140, static_cast<float>(cy) - 40,
-                              GLUT_BITMAP_HELVETICA_12, level.clientBrief);
+                              GLUT_BITMAP_HELVETICA_18, level.clientBrief);
 
         SetColor(0.2f, 1.0f, 0.2f);
         RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 60,
-                     GLUT_BITMAP_HELVETICA_18, "[ Enter ] - Mulai");
+                     GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Mulai");
 
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 85,
-                     GLUT_BITMAP_HELVETICA_12, "Esc = Keluar");
+                     GLUT_BITMAP_HELVETICA_18, "Esc = Keluar");
     }
     else if (gState.gameState == GameState::WIN)
     {
@@ -558,23 +619,23 @@ void RenderOverlay()
         std::snprintf(buf, sizeof(buf), "Budget terpakai: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
         RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
-                     GLUT_BITMAP_HELVETICA_12, buf);
+                     GLUT_BITMAP_HELVETICA_18, buf);
 
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
             RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 50,
-                         GLUT_BITMAP_HELVETICA_18, "[ Enter ] - Lanjut Level");
+                         GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
             RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 50,
-                         GLUT_BITMAP_HELVETICA_18, "Semua Level Selesai!");
+                         GLUT_BITMAP_TIMES_ROMAN_24, "Semua Level Selesai!");
         }
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
-                     GLUT_BITMAP_HELVETICA_12, "Esc = Menu Utama");
+                     GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
     else if (gState.gameState == GameState::LOSE)
     {
@@ -586,23 +647,23 @@ void RenderOverlay()
         if (gState.failReason[0] != '\0')
         {
             RenderString(static_cast<float>(cx) - 140, static_cast<float>(cy) + 20,
-                         GLUT_BITMAP_HELVETICA_12, gState.failReason);
+                         GLUT_BITMAP_HELVETICA_18, gState.failReason);
         }
         else
         {
             std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
                           gState.totalSpent, GetCurrentLevel().budget);
             RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
-                         GLUT_BITMAP_HELVETICA_12, buf);
+                         GLUT_BITMAP_HELVETICA_18, buf);
         }
 
         SetColor(0.2f, 1.0f, 0.2f);
         RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 50,
-                     GLUT_BITMAP_HELVETICA_18, "[ Enter ] - Coba Lagi");
+                     GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Coba Lagi");
 
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
-                     GLUT_BITMAP_HELVETICA_12, "Esc = Menu Utama");
+                     GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
 
     PopOverlayOrtho();
@@ -622,6 +683,7 @@ void Display()
     SetupLights();
 
     DrawGrid();
+    DrawRoom();
     RenderShadows();
     DrawSceneObjects();
     DrawPointLightMarker();

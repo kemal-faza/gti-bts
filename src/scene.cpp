@@ -156,7 +156,7 @@ void AddNewObjectInEditMode()
     if (SceneObject *selected = GetSelectedObject())
     {
         position = selected->position;
-        position.x += 2.0f;
+        position.x += 4.0f;
     }
 
     if (pattern == 1)

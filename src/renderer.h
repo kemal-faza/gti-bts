@@ -14,6 +14,7 @@ void SetupLights();
 void DrawCylinderPrimitive(float radius, float height);
 void DrawObjectGeometry(const SceneObject &obj);
 void DrawGrid();
+void DrawRoom();
 void DrawSceneObjects();
 void DrawPointLightMarker();
 
