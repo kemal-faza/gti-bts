@@ -186,7 +186,11 @@ void AddNewObjectInEditMode()
 
     // Collision check sebelum placement
     if (!CanPlaceAt(-1, type, position))
+    {
+        fprintf(stderr, "[Ruang] Tidak bisa menempatkan: area terhalang atau di luar ruangan\n");
+        gState.titleDirty = true;
         return;
+    }
 
     AddSceneObject(type, subType, material, position, 0.0f, cost);
     gState.selectedObjectIndex = static_cast<int>(gSceneObjects.size()) - 1;
@@ -205,7 +209,11 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     newPos.z = Clamp(newPos.z, -kRoomSize, kRoomSize);
 
     if (!CanPlaceAt(gState.selectedObjectIndex, selected->type, newPos))
+    {
+        fprintf(stderr, "[Ruang] Tidak bisa geser: area terhalang\n");
+        gState.titleDirty = true;
         return;
+    }
 
     selected->position = newPos;
 }
@@ -221,6 +229,7 @@ void GetBounds(const ObjectType type, float &halfX, float &halfZ)
     case ObjectType::CUBE:     halfX = 1.0f; halfZ = 1.0f; break;
     case ObjectType::CYLINDER: halfX = 0.7f; halfZ = 0.7f; break;
     case ObjectType::ROAD:     halfX = 3.0f; halfZ = 1.5f; break;
+    default:                   halfX = 0.5f; halfZ = 0.5f; break;
     }
 }
 
