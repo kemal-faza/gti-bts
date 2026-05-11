@@ -639,12 +639,25 @@ bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize)
         }
     }
 
-    // ── Compute final axis-aligned bounds (local space, after normalization) ──
+    // ── Center horizontally so origin (0,0,0) is at bounding box center ──
+    float centerX = (minX + maxX) * outModel.normalizeScale * 0.5f;
+    float centerZ = (minZ + maxZ) * outModel.normalizeScale * 0.5f;
+    for (auto &prim : outModel.primitives)
+    {
+        if (prim.skip) continue;
+        for (size_t i = 0; i + 2 < prim.positions.size(); i += 3)
+        {
+            prim.positions[i]     -= centerX;
+            prim.positions[i + 2] -= centerZ;
+        }
+    }
+
+    // ── Compute final axis-aligned bounds (after centering) ──
     outModel.boundsHalfX = (maxX - minX) * outModel.normalizeScale * 0.5f;
     outModel.boundsHalfZ = (maxZ - minZ) * outModel.normalizeScale * 0.5f;
     float finalMinY = minY * outModel.normalizeScale + outModel.offsetY;
     float finalMaxY = maxY * outModel.normalizeScale + outModel.offsetY;
-    outModel.boundsHalfY = (finalMaxY - finalMinY) * 0.5f;
+    outModel.boundsHalfY = finalMaxY - finalMinY;   // FULL height
 
     // Safety minimum — jangan sampai 0 agar collision tetap jalan
     if (outModel.boundsHalfX < 0.01f) outModel.boundsHalfX = 0.5f;

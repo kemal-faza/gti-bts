@@ -14,11 +14,9 @@ void LoadAllGLTFModels()
     struct { ObjectSubType subType; const char *dir; float targetSize; } models[] = {
         {ObjectSubType::SOFA,        "assets/object/sofa",           2.5f},
         {ObjectSubType::MEJA,        "assets/object/table",          2.0f},
-        {ObjectSubType::LEMARI,      "assets/object/cabinet",        1.4f},
-        {ObjectSubType::RAK,         "assets/object/shelf",          1.2f},
-        {ObjectSubType::KURSI,       "assets/object/chair",          1.0f},
-        {ObjectSubType::MEJA_BUNDAR, "assets/object/rounded-table",  1.5f},
-        {ObjectSubType::LAMPU,       "assets/object/lamp",           0.6f},
+        {ObjectSubType::LEMARI,      "assets/object/cabinet",        2.0f},
+        {ObjectSubType::RAK,         "assets/object/shelf",          1.6f},
+        {ObjectSubType::LAMPU,       "assets/object/lamp",           1.5f},
         {ObjectSubType::KARPET,      "assets/object/carpet",         4.0f},
         {ObjectSubType::KIPAS,       "assets/object/fan",            1.0f},
     };
@@ -28,6 +26,18 @@ void LoadAllGLTFModels()
         int idx = static_cast<int>(m.subType);
         if (!LoadGLTF(m.dir, gGLTFModels[idx], m.targetSize))
             fprintf(stderr, "[Init] Failed to load glTF model: %s\n", m.dir);
+    }
+
+    // ── Override shelf color to white (rak tidak punya tekstur) ──
+    for (auto &prim : gGLTFModels[static_cast<int>(ObjectSubType::RAK)].primitives)
+    {
+        if (!prim.skip)
+        {
+            prim.baseColor[0] = 1.0f;
+            prim.baseColor[1] = 1.0f;
+            prim.baseColor[2] = 1.0f;
+            prim.baseColor[3] = 1.0f;
+        }
     }
 
     fprintf(stdout, "[Init] Loaded %d glTF models\n",
