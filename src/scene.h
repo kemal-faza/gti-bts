@@ -80,7 +80,8 @@ struct SceneObject
 
 struct LevelRequirement
 {
-    ObjectType type;
+    ObjectType type;        // fallback compatibility
+    ObjectSubType subType;  // specific furniture required
     int count;
 };
 
@@ -98,6 +99,7 @@ struct AppState
     AppMode activeMode = AppMode::VIEW_PERSPECTIVE;
     CameraPreset cameraPreset = CameraPreset::ONE_POINT;
     int selectedObjectIndex = 0;
+    int selectedFurnitureType = 0;  // 0-8, untuk placement
     bool isDragging = false;
     bool smoothShading = true;
     bool directionalLightEnabled = true;

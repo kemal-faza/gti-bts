@@ -146,12 +146,13 @@ void AddNewObjectInEditMode()
 {
     if (gState.activeMode != AppMode::EDIT_ORTHO) return;
 
-    const int pattern = static_cast<int>(gSceneObjects.size()) % 3;
+    // Use the user-selected furniture type
+    const int typeIdx = gState.selectedFurnitureType;
     ObjectType type      = ObjectType::CUBE;
     ObjectSubType subType = ObjectSubType::MEJA;
     MaterialType material = MaterialType::GLOSSY;
     int cost = 10;
-    Vec3 position = {0.0f, 1.0f, 0.0f};
+    Vec3 position = {0.0f, 0.0f, 0.0f};
 
     if (SceneObject *selected = GetSelectedObject())
     {
@@ -159,29 +160,48 @@ void AddNewObjectInEditMode()
         position.x += 4.0f;
     }
 
-    if (pattern == 1)
+    switch (typeIdx)
     {
-        type     = ObjectType::CYLINDER;
-        subType  = ObjectSubType::MEJA_BUNDAR;
-        material = MaterialType::ROUGH;
-        cost     = 8;
-        position.y = 0.0f;
-    }
-    else if (pattern == 2)
-    {
-        type     = ObjectType::ROAD;
-        subType  = ObjectSubType::KARPET;
-        material = MaterialType::ROUGH;
-        cost     = 5;
-        position.y = 0.12f;
-    }
-    else
-    {
-        type     = ObjectType::CUBE;
-        subType  = ObjectSubType::MEJA;
-        material = MaterialType::GLOSSY;
-        cost     = 10;
-        position.y = 1.0f;
+    case 0: // MEJA
+        type = ObjectType::CUBE; subType = ObjectSubType::MEJA;
+        material = MaterialType::GLOSSY; cost = 10;
+        break;
+    case 1: // SOFA
+        type = ObjectType::CUBE; subType = ObjectSubType::SOFA;
+        material = MaterialType::ROUGH; cost = 10;
+        break;
+    case 2: // KURSI
+        type = ObjectType::CUBE; subType = ObjectSubType::KURSI;
+        material = MaterialType::ROUGH; cost = 8;
+        break;
+    case 3: // MEJA_BUNDAR
+        type = ObjectType::CYLINDER; subType = ObjectSubType::MEJA_BUNDAR;
+        material = MaterialType::ROUGH; cost = 8;
+        break;
+    case 4: // LEMARI
+        type = ObjectType::CUBE; subType = ObjectSubType::LEMARI;
+        material = MaterialType::GLOSSY; cost = 12;
+        break;
+    case 5: // RAK
+        type = ObjectType::CUBE; subType = ObjectSubType::RAK;
+        material = MaterialType::GLOSSY; cost = 8;
+        break;
+    case 6: // KARPET
+        type = ObjectType::ROAD; subType = ObjectSubType::KARPET;
+        material = MaterialType::ROUGH; cost = 5;
+        break;
+    case 7: // LAMPU
+        type = ObjectType::CYLINDER; subType = ObjectSubType::LAMPU;
+        material = MaterialType::ROUGH; cost = 6;
+        break;
+    case 8: // TIKAR
+        type = ObjectType::ROAD; subType = ObjectSubType::TIKAR;
+        material = MaterialType::ROUGH; cost = 3;
+        break;
+    default:
+        type = ObjectType::CUBE; subType = ObjectSubType::MEJA;
+        material = MaterialType::GLOSSY; cost = 10;
+        break;
     }
 
     // Collision check sebelum placement
@@ -279,8 +299,9 @@ void InitializeLevels()
                           "Budget: 50";
         lv.budget       = 50;
         lv.requiredItems = {
-            {ObjectType::CUBE, 2},
-            {ObjectType::ROAD, 1}
+            {ObjectType::CUBE, ObjectSubType::SOFA, 2},
+            {ObjectType::CUBE, ObjectSubType::MEJA, 1},
+            {ObjectType::ROAD, ObjectSubType::KARPET, 1}
         };
         gLevels.push_back(lv);
     }
@@ -293,8 +314,8 @@ void InitializeLevels()
                           "Budget: 60";
         lv.budget       = 60;
         lv.requiredItems = {
-            {ObjectType::CYLINDER, 1},
-            {ObjectType::CUBE, 4}
+            {ObjectType::CYLINDER, ObjectSubType::MEJA_BUNDAR, 1},
+            {ObjectType::CUBE, ObjectSubType::KURSI, 4}
         };
         gLevels.push_back(lv);
     }
@@ -307,9 +328,9 @@ void InitializeLevels()
                           "Budget: 45";
         lv.budget       = 45;
         lv.requiredItems = {
-            {ObjectType::CUBE, 1},
-            {ObjectType::CYLINDER, 1},
-            {ObjectType::ROAD, 1}
+            {ObjectType::CUBE, ObjectSubType::LEMARI, 1},
+            {ObjectType::CYLINDER, ObjectSubType::LAMPU, 1},
+            {ObjectType::ROAD, ObjectSubType::KARPET, 1}
         };
         gLevels.push_back(lv);
     }
@@ -338,7 +359,16 @@ GameState EvaluateSubmission()
     {
         int count = 0;
         for (const auto &obj : gSceneObjects)
-            if (obj.type == req.type) ++count;
+        {
+            if (req.subType != ObjectSubType::NONE)
+            {
+                if (obj.subType == req.subType) ++count;
+            }
+            else
+            {
+                if (obj.type == req.type) ++count;
+            }
+        }
 
         if (count < req.count)
         {
@@ -346,7 +376,9 @@ GameState EvaluateSubmission()
             if (gState.failReason[0] == '\0')
             {
                 std::snprintf(gState.failReason, sizeof(gState.failReason),
-                              "Item kurang: butuh %d lagi.", req.count - count);
+                              "Item kurang: butuh %d %s lagi.",
+                              req.count - count,
+                              GetSubTypeLabel(req.subType));
             }
         }
     }

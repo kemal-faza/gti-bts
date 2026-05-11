@@ -113,6 +113,14 @@ static bool HandleGlobalKeys(unsigned char key)
 
 static void HandleEditKeys(unsigned char key)
 {
+    if (key >= '1' && key <= '9')
+    {
+        gState.selectedFurnitureType = key - '1';
+        gState.titleDirty = true;
+        glutPostRedisplay();
+        return;
+    }
+
     if (key == ' ')
     {
         AddNewObjectInEditMode();
@@ -262,7 +270,7 @@ void MouseDrag(int x, int y)
     {
         gViewYawDeg   -= static_cast<float>(deltaX) * kMouseLookSensitivity;
         gViewPitchDeg += static_cast<float>(deltaY) * kMouseLookSensitivity;
-        gViewPitchDeg  = Clamp(gViewPitchDeg, -85.0f, 85.0f);
+        gViewPitchDeg  = Clamp(gViewPitchDeg, -25.0f, 80.0f);
 
         if (gState.cameraPreset != CameraPreset::FREE)
         {

@@ -216,6 +216,242 @@ static void DrawTexturedCube(const float size)
     glEnd();
 }
 
+// ---------------------------------------------------------------------------
+//  Furniture composite drawing (minimalist modern)
+// ---------------------------------------------------------------------------
+
+static void DrawTable()
+{
+    // Table top: 2.0 x 0.1 x 1.2
+    glPushMatrix();
+    glTranslatef(0.0f, 0.95f, 0.0f);
+    glScalef(2.0f, 0.1f, 1.2f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // 4 legs
+    const float legH = 0.95f;
+    const float legR = 0.05f;
+    const float lx = 0.85f;
+    const float lz = 0.50f;
+    for (int i = 0; i < 4; ++i)
+    {
+        float x = (i == 0 || i == 3) ? lx : -lx;
+        float z = (i < 2) ? -lz : lz;
+        glPushMatrix();
+        glTranslatef(x, 0.0f, z);
+        DrawCylinderPrimitive(legR, legH);
+        glPopMatrix();
+    }
+}
+
+static void DrawSofa()
+{
+    // Seat: 2.2 x 0.35 x 0.9
+    glPushMatrix();
+    glTranslatef(0.0f, 0.175f, 0.0f);
+    glScalef(2.2f, 0.35f, 0.9f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // Backrest: 2.2 x 0.55 x 0.15
+    glPushMatrix();
+    glTranslatef(0.0f, 0.525f, -0.375f);
+    glScalef(2.2f, 0.55f, 0.15f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // Armrests
+    for (int side = -1; side <= 1; side += 2)
+    {
+        glPushMatrix();
+        glTranslatef(side * 1.025f, 0.275f, 0.0f);
+        glScalef(0.15f, 0.45f, 0.9f);
+        DrawTexturedCube(1.0f);
+        glPopMatrix();
+    }
+
+    // Legs
+    const float legH = 0.10f;
+    const float legR = 0.04f;
+    const float lx = 0.95f;
+    const float lz = 0.375f;
+    for (int i = 0; i < 4; ++i)
+    {
+        float x = (i == 0 || i == 3) ? lx : -lx;
+        float z = (i < 2) ? -lz : lz;
+        glPushMatrix();
+        glTranslatef(x, 0.0f, z);
+        DrawCylinderPrimitive(legR, legH);
+        glPopMatrix();
+    }
+}
+
+static void DrawChair()
+{
+    // Seat: 1.0 x 0.08 x 1.0
+    glPushMatrix();
+    glTranslatef(0.0f, 0.50f, 0.0f);
+    glScalef(1.0f, 0.08f, 1.0f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // Backrest: 1.0 x 0.50 x 0.08
+    glPushMatrix();
+    glTranslatef(0.0f, 0.75f, -0.46f);
+    glScalef(1.0f, 0.50f, 0.08f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // Legs
+    const float legH = 0.50f;
+    const float legR = 0.04f;
+    const float l = 0.40f;
+    for (int i = 0; i < 4; ++i)
+    {
+        float x = (i == 0 || i == 3) ? l : -l;
+        float z = (i < 2) ? -l : l;
+        glPushMatrix();
+        glTranslatef(x, 0.0f, z);
+        DrawCylinderPrimitive(legR, legH);
+        glPopMatrix();
+    }
+}
+
+static void DrawWardrobe()
+{
+    // Body: 1.4 x 2.4 x 0.55
+    glPushMatrix();
+    glTranslatef(0.0f, 1.20f, 0.0f);
+    glScalef(1.4f, 2.4f, 0.55f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+
+    // Doors
+    for (int side = -1; side <= 1; side += 2)
+    {
+        glPushMatrix();
+        glTranslatef(side * 0.33f, 1.20f, 0.295f);
+        glScalef(0.65f, 2.2f, 0.04f);
+        DrawTexturedCube(1.0f);
+        glPopMatrix();
+    }
+
+    // Handles
+    for (int side = -1; side <= 1; side += 2)
+    {
+        glPushMatrix();
+        glTranslatef(side * 0.15f, 1.20f, 0.33f);
+        glutSolidSphere(0.04f, 12, 12);
+        glPopMatrix();
+    }
+}
+
+static void DrawShelf()
+{
+    // Vertical frames
+    for (int side = -1; side <= 1; side += 2)
+    {
+        glPushMatrix();
+        glTranslatef(side * 0.65f, 0.70f, 0.0f);
+        glScalef(0.05f, 1.4f, 0.05f);
+        DrawTexturedCube(1.0f);
+        glPopMatrix();
+    }
+
+    // Shelves
+    const float shelfY[3] = {0.30f, 0.70f, 1.10f};
+    for (int i = 0; i < 3; ++i)
+    {
+        glPushMatrix();
+        glTranslatef(0.0f, shelfY[i], 0.0f);
+        glScalef(1.3f, 0.04f, 0.35f);
+        DrawTexturedCube(1.0f);
+        glPopMatrix();
+    }
+}
+
+static void DrawRoundTable()
+{
+    // Top
+    glPushMatrix();
+    glTranslatef(0.0f, 0.96f, 0.0f);
+    DrawCylinderPrimitive(0.75f, 0.08f);
+    glPopMatrix();
+
+    // Pedestal
+    glPushMatrix();
+    glTranslatef(0.0f, 0.48f, 0.0f);
+    DrawCylinderPrimitive(0.12f, 0.96f);
+    glPopMatrix();
+
+    // Base
+    glPushMatrix();
+    glTranslatef(0.0f, 0.02f, 0.0f);
+    DrawCylinderPrimitive(0.40f, 0.04f);
+    glPopMatrix();
+}
+
+static void DrawLamp()
+{
+    // Base
+    glPushMatrix();
+    glTranslatef(0.0f, 0.03f, 0.0f);
+    DrawCylinderPrimitive(0.22f, 0.06f);
+    glPopMatrix();
+
+    // Stand
+    glPushMatrix();
+    glTranslatef(0.0f, 0.53f, 0.0f);
+    DrawCylinderPrimitive(0.035f, 1.00f);
+    glPopMatrix();
+
+    // Shade
+    glPushMatrix();
+    glTranslatef(0.0f, 1.13f, 0.0f);
+    DrawCylinderPrimitive(0.18f, 0.20f);
+    glPopMatrix();
+}
+
+static void DrawCarpet()
+{
+    glPushMatrix();
+    glTranslatef(0.0f, 0.02f, 0.0f);
+    glScalef(3.0f, 0.04f, 2.0f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+}
+
+static void DrawMat()
+{
+    glPushMatrix();
+    glTranslatef(0.0f, 0.01f, 0.0f);
+    glScalef(2.0f, 0.02f, 1.2f);
+    DrawTexturedCube(1.0f);
+    glPopMatrix();
+}
+
+static void DrawCeilingFan()
+{
+    // Motor housing
+    glPushMatrix();
+    glTranslatef(0.0f, -0.075f, 0.0f);
+    DrawCylinderPrimitive(0.12f, 0.15f);
+    glPopMatrix();
+
+    // Blades
+    for (int i = 0; i < 3; ++i)
+    {
+        float angle = static_cast<float>(i) * 120.0f;
+        glPushMatrix();
+        glRotatef(angle, 0.0f, 1.0f, 0.0f);
+        glTranslatef(0.5f, -0.02f, 0.0f);
+        glScalef(1.0f, 0.02f, 0.12f);
+        DrawTexturedCube(1.0f);
+        glPopMatrix();
+    }
+}
+
 static bool s_shadowPass = false;
 
 void DrawObjectGeometry(const SceneObject &obj)
@@ -230,22 +466,36 @@ void DrawObjectGeometry(const SceneObject &obj)
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, tex);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+        // Override material to prevent texture darkening
+        GLfloat whiteAmb[] = {0.6f, 0.6f, 0.6f, 1.0f};
+        GLfloat whiteDif[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  whiteAmb);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  whiteDif);
     }
 
-    switch (obj.type)
+    switch (obj.subType)
     {
-    case ObjectType::CUBE:
-        DrawTexturedCube(2.0f);
-        break;
-
-    case ObjectType::CYLINDER:
-        DrawCylinderPrimitive(0.7f, 2.2f);
-        break;
-
-    case ObjectType::ROAD:
-        glScalef(6.0f, 0.24f, 3.0f);
-        DrawTexturedCube(1.0f);
-        break;
+    case ObjectSubType::MEJA:        DrawTable();       break;
+    case ObjectSubType::SOFA:        DrawSofa();        break;
+    case ObjectSubType::KURSI:       DrawChair();       break;
+    case ObjectSubType::LEMARI:      DrawWardrobe();    break;
+    case ObjectSubType::RAK:         DrawShelf();       break;
+    case ObjectSubType::MEJA_BUNDAR: DrawRoundTable();  break;
+    case ObjectSubType::LAMPU:       DrawLamp();        break;
+    case ObjectSubType::KARPET:      DrawCarpet();      break;
+    case ObjectSubType::TIKAR:       DrawMat();         break;
+    case ObjectSubType::KIPAS:       DrawCeilingFan();  break;
+    default:
+        switch (obj.type)
+        {
+        case ObjectType::CUBE:     DrawTexturedCube(2.0f); break;
+        case ObjectType::CYLINDER: DrawCylinderPrimitive(0.7f, 2.2f); break;
+        case ObjectType::ROAD:
+            glScalef(6.0f, 0.24f, 3.0f);
+            DrawTexturedCube(1.0f);
+            break;
+        }
     }
 
     if (tex != 0)
@@ -283,49 +533,137 @@ void DrawGrid()
 void DrawRoom()
 {
     const GLboolean wasLighting = glIsEnabled(GL_LIGHTING);
+    const GLboolean wasTexture  = glIsEnabled(GL_TEXTURE_2D);
+    const GLboolean wasBlend    = glIsEnabled(GL_BLEND);
+
     glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    const float h = 3.0f; // wall height
-
-    // Floor — semi-transparan solid color
-    glColor4f(0.20f, 0.22f, 0.25f, 0.60f);
-    glBegin(GL_QUADS);
-    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
-    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
-    glEnd();
-
-    // Walls — wireframe outline untuk visibilitas
-    glColor4f(0.50f, 0.55f, 0.65f, 0.35f);
-    glBegin(GL_QUADS);
-    // Back wall (z = -kRoomSize)
-    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f( kRoomSize, h, -kRoomSize);
-    glVertex3f(-kRoomSize, h, -kRoomSize);
-    // Front wall (z = +kRoomSize)
-    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
-    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
-    glVertex3f( kRoomSize, h,  kRoomSize);
-    glVertex3f(-kRoomSize, h,  kRoomSize);
-    // Left wall (x = -kRoomSize)
-    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
-    glVertex3f(-kRoomSize, h,  kRoomSize);
-    glVertex3f(-kRoomSize, h, -kRoomSize);
-    // Right wall (x = +kRoomSize)
-    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
-    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
-    glVertex3f( kRoomSize, h,  kRoomSize);
-    glVertex3f( kRoomSize, h, -kRoomSize);
-    glEnd();
-
     glDisable(GL_BLEND);
-    if (wasLighting) glEnable(GL_LIGHTING);
+
+    // ── Floor ──
+    const float texRepeat = kRoomSize * 0.5f;  // repeat ~ setiap 2 unit
+    GLuint floorTex = GetFloorTexture();
+
+    if (floorTex != 0)
+    {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, floorTex);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glColor3f(1.0f, 1.0f, 1.0f);
+    }
+    else
+    {
+        glColor3f(0.30f, 0.32f, 0.35f);
+    }
+
+    glBegin(GL_QUADS);
+    if (floorTex != 0)
+        glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+
+    if (floorTex != 0)
+        glTexCoord2f(texRepeat, 0.0f);
+    glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+
+    if (floorTex != 0)
+        glTexCoord2f(texRepeat, texRepeat);
+    glVertex3f( kRoomSize, 0.0f,  kRoomSize);
+
+    if (floorTex != 0)
+        glTexCoord2f(0.0f, texRepeat);
+    glVertex3f(-kRoomSize, 0.0f,  kRoomSize);
+    glEnd();
+
+    if (floorTex != 0)
+        glDisable(GL_TEXTURE_2D);
+
+    // ── Textured walls ──
+    GLuint wallTex = GetWallTexture();
+    if (wallTex != 0)
+    {
+        glEnable(GL_LIGHTING);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, wallTex);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+        // Material putih agar texture terlihat natural
+        GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  white);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  white);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
+        glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+
+        const float h = 3.0f;
+        glBegin(GL_QUADS);
+        // Back (z = -kRoomSize)
+        glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+        glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+        glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, -kRoomSize);
+        glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, -kRoomSize);
+        // Front (z = +kRoomSize)
+        glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, kRoomSize);
+        glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, kRoomSize);
+        glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, kRoomSize);
+        glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, kRoomSize);
+        // Left (x = -kRoomSize)
+        glTexCoord2f(0.0f, 0.0f);      glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+        glTexCoord2f(kRoomSize, 0.0f); glVertex3f(-kRoomSize, 0.0f, kRoomSize);
+        glTexCoord2f(kRoomSize, h);    glVertex3f(-kRoomSize, h, kRoomSize);
+        glTexCoord2f(0.0f, h);         glVertex3f(-kRoomSize, h, -kRoomSize);
+        // Right (x = +kRoomSize)
+        glTexCoord2f(0.0f, 0.0f);      glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+        glTexCoord2f(kRoomSize, 0.0f); glVertex3f( kRoomSize, 0.0f, kRoomSize);
+        glTexCoord2f(kRoomSize, h);    glVertex3f( kRoomSize, h, kRoomSize);
+        glTexCoord2f(0.0f, h);         glVertex3f( kRoomSize, h, -kRoomSize);
+        glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+    }
+    else
+    {
+        // Fallback: wireframe outline
+        glDisable(GL_LIGHTING);
+        const float h = 3.0f;
+        glColor3f(0.50f, 0.55f, 0.65f);
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+        glVertex3f( kRoomSize, 0.0f, -kRoomSize);
+        glVertex3f( kRoomSize, h, -kRoomSize);
+        glVertex3f(-kRoomSize, h, -kRoomSize);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(-kRoomSize, 0.0f, kRoomSize);
+        glVertex3f( kRoomSize, 0.0f, kRoomSize);
+        glVertex3f( kRoomSize, h, kRoomSize);
+        glVertex3f(-kRoomSize, h, kRoomSize);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(-kRoomSize, 0.0f, -kRoomSize);
+        glVertex3f(-kRoomSize, 0.0f, kRoomSize);
+        glVertex3f(-kRoomSize, h, kRoomSize);
+        glVertex3f(-kRoomSize, h, -kRoomSize);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glVertex3f(kRoomSize, 0.0f, -kRoomSize);
+        glVertex3f(kRoomSize, 0.0f, kRoomSize);
+        glVertex3f(kRoomSize, h, kRoomSize);
+        glVertex3f(kRoomSize, h, -kRoomSize);
+        glEnd();
+    }
+
+    // Reset lighting ke state awal (sebelum wall) untuk restore yang konsisten
+    glDisable(GL_LIGHTING);
+
+    // Restore state
+    if (wasTexture)
+        glEnable(GL_TEXTURE_2D);
+    else
+        glDisable(GL_TEXTURE_2D);
+
+    if (wasBlend)
+        glEnable(GL_BLEND);
+
+    if (wasLighting)
+        glEnable(GL_LIGHTING);
 }
 //  Scene rendering
 // ---------------------------------------------------------------------------
@@ -378,33 +716,42 @@ void DrawPointLightMarker()
 
 static void ApplyShadowMatrix(const float lx, const float ly, const float lz)
 {
+    // Directional light projection onto plane y=0
+    const float il = 1.0f / ly;
     GLfloat shadowMat[16] = {
-         ly,  0,  0,  0,
-        -lx,  0, -lz, -1,
-          0,  0,  ly,  0,
-          0,  0,  0,  ly
+        1.0f,    0.0f,    0.0f,    0.0f,
+       -lx*il,   0.0f,   -lz*il,   0.0f,
+        0.0f,    0.0f,    1.0f,    0.0f,
+        0.0f,    0.0f,    0.0f,    1.0f
     };
     glMultMatrixf(shadowMat);
 }
 
 void RenderShadows()
 {
-    // Arah directional light (LIGHT0) dari SetupLights
-    const float lx = -0.45f;
-    const float ly =  1.0f;
-    const float lz =  0.25f;
+    // Skip shadows in edit mode — mengganggu visibilitas
+    if (gState.activeMode == AppMode::EDIT_ORTHO) return;
 
-    const GLboolean wasLighting = glIsEnabled(GL_LIGHTING);
-    const GLboolean wasBlend    = glIsEnabled(GL_BLEND);
+    // Arah directional light (LIGHT0) — dinormalisasi
+    float lx = -0.45f;
+    float ly =  1.0f;
+    float lz =  0.25f;
+    const float len = std::sqrt(lx * lx + ly * ly + lz * lz);
+    if (len > 0.0001f) { lx /= len; ly /= len; lz /= len; }
+
+    const GLboolean wasLighting  = glIsEnabled(GL_LIGHTING);
+    const GLboolean wasBlend     = glIsEnabled(GL_BLEND);
+    const GLboolean wasDepthTest = glIsEnabled(GL_DEPTH_TEST);
 
     glEnable(GL_STENCIL_TEST);
 
-    // Pass 1: render lantai ke stencil buffer
+    // ── Pass 1: render lantai ke stencil buffer ──
     glClear(GL_STENCIL_BUFFER_BIT);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
     glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);   // lantai flat — tidak perlu depth
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
@@ -418,7 +765,7 @@ void RenderShadows()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glDepthMask(GL_TRUE);
 
-    // Pass 2: gambar shadow hanya di area stencil
+    // ── Pass 2: gambar shadow di area stencil ──
     glStencilFunc(GL_EQUAL, 1, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
@@ -426,10 +773,13 @@ void RenderShadows()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_TEXTURE_2D);
 
-    glColor4f(0.0f, 0.0f, 0.0f, 0.40f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);    // shadow di y=0 sama dengan lantai
+    glDepthMask(GL_FALSE);     // jangan tulis depth shadow
+
+    glColor4f(0.0f, 0.0f, 0.0f, 0.10f);
 
     s_shadowPass = true;
-    glDisable(GL_DEPTH_TEST);
 
     for (const auto &obj : gSceneObjects)
     {
@@ -437,19 +787,20 @@ void RenderShadows()
         glTranslatef(obj.position.x, obj.position.y, obj.position.z);
         glRotatef(obj.rotationY, 0.0f, 1.0f, 0.0f);
         ApplyShadowMatrix(lx, ly, lz);
-        glTranslatef(0.0f, 0.02f, 0.0f); // bias untuk anti z-fighting
-
+        // GL_LEQUAL + depthMask(GL_FALSE) = no z-fighting, no bias needed
         DrawObjectGeometry(obj);
         glPopMatrix();
     }
 
-    glEnable(GL_DEPTH_TEST);
     s_shadowPass = false;
 
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);       // restore default
+
+    if (!wasDepthTest) glDisable(GL_DEPTH_TEST);
     if (!wasBlend) glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
 
-    // Restore state untuk scene rendering
     if (wasLighting) glEnable(GL_LIGHTING);
 }
 
@@ -504,6 +855,22 @@ void RenderHUD()
 {
     PushOverlayOrtho();
 
+    // ── Background semi-transparan untuk readability ──
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(0.0f, 0.0f, 0.0f, 0.55f);
+    glBegin(GL_QUADS);
+    glVertex2i(0, 0);
+    glVertex2i(350, 0);
+    glVertex2i(350, 500);
+    glVertex2i(0, 500);
+    glEnd();
+    glDisable(GL_BLEND);
+
+    // Auto-scale font based on window height
+    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
+    glPixelZoom(fontScale, fontScale);
+
     const LevelData &level = GetCurrentLevel();
     char buf[128];
 
@@ -531,32 +898,47 @@ void RenderHUD()
     {
         int count = 0;
         for (const auto &obj : gSceneObjects)
-            if (obj.type == req.type) ++count;
+        {
+            if (req.subType != ObjectSubType::NONE)
+            {
+                if (obj.subType == req.subType) ++count;
+            }
+            else
+            {
+                if (obj.type == req.type) ++count;
+            }
+        }
 
         char check = (count >= req.count) ? 'v' : ' ';
-        const char *label = nullptr;
-        for (const auto &so : gSceneObjects)
-        {
-            if (so.type == req.type)
-            {
-                label = GetSubTypeLabel(so.subType);
-                break;
-            }
-        }
-        if (label == nullptr)
-        {
-            switch (req.type)
-            {
-            case ObjectType::CUBE:     label = "Kotak";    break;
-            case ObjectType::CYLINDER: label = "Bulat";    break;
-            case ObjectType::ROAD:     label = "Datar";    break;
-            default:                   label = "Objek";    break;
-            }
-        }
+        const char *label = GetSubTypeLabel(req.subType);
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
         RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18, buf);
         lineY += 24;
+    }
+
+    // ── Furniture Selection ──
+    lineY += 8;
+    SetColor(0.55f, 0.55f, 0.55f);
+    RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
+                 "--- Furniture (1-9) ---");
+    lineY += 24;
+
+    const char *furnitureNames[] = {
+        "1. Meja", "2. Sofa", "3. Kursi",
+        "4. Meja Bundar", "5. Lemari", "6. Rak",
+        "7. Karpet", "8. Lampu", "9. Tikar"
+    };
+    for (int i = 0; i < 9; ++i)
+    {
+        if (i == gState.selectedFurnitureType)
+            SetColor(1.0f, 1.0f, 1.0f);
+        else
+            SetColor(0.65f, 0.65f, 0.65f);
+
+        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
+                     furnitureNames[i]);
+        lineY += 20;
     }
 
     // Petunjuk
@@ -564,6 +946,7 @@ void RenderHUD()
     RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_18,
                  "Enter = Submit | Tab = Edit/View | Esc = Menu");
 
+    glPixelZoom(1.0f, 1.0f);
     PopOverlayOrtho();
 }
 
@@ -574,7 +957,7 @@ void RenderOverlay()
     // Semi-transparent dark overlay
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    SetColor(0.0f, 0.0f, 0.0f);
+    glColor4f(0.0f, 0.0f, 0.0f, 0.70f);
     glBegin(GL_QUADS);
     glVertex2i(0, 0);
     glVertex2i(gWindowWidth, 0);
@@ -582,6 +965,10 @@ void RenderOverlay()
     glVertex2i(0, gWindowHeight);
     glEnd();
     glDisable(GL_BLEND);
+
+    // Auto-scale font based on window height
+    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
+    glPixelZoom(fontScale, fontScale);
 
     const int cx = gWindowWidth / 2;
     const int cy = gWindowHeight / 2;
@@ -663,9 +1050,10 @@ void RenderOverlay()
 
         SetColor(0.6f, 0.6f, 0.6f);
         RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
-                     GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
+                      GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
 
+    glPixelZoom(1.0f, 1.0f);
     PopOverlayOrtho();
 }
 
@@ -682,7 +1070,6 @@ void Display()
     ApplyCameraViewMatrix();
     SetupLights();
 
-    DrawGrid();
     DrawRoom();
     RenderShadows();
     DrawSceneObjects();

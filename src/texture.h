@@ -7,3 +7,5 @@
 void InitTextures();
 void ShutdownTextures();
 GLuint GetTextureForSubType(ObjectSubType subType);
+GLuint GetFloorTexture();
+GLuint GetWallTexture();
