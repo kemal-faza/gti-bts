@@ -91,9 +91,9 @@ void ApplyObjectMaterial(const MaterialType material, const bool selected)
         shininess   = 96.0f;
     }
 
-    if (selected)
+    if (selected && gState.activeMode == AppMode::EDIT_ORTHO)
     {
-        // Stronger emission highlight untuk semua mode
+        // Stronger emission highlight — hanya di edit mode
         emission[0] = 0.25f;
         emission[1] = 0.25f;
         emission[2] = 0.45f;
@@ -599,12 +599,14 @@ void DrawRoom()
         glBindTexture(GL_TEXTURE_2D, wallTex);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-        // Material putih agar texture terlihat natural
+        // Material putih + two-sided + zero specular agar cahaya konsisten
         GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  white);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  white);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
+        GLfloat noSpec[] = {0.0f, 0.0f, 0.0f, 1.0f};
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,   white);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,   white);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,  noSpec);
         glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 0.0f);
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
         const float h = 3.0f;
         glBegin(GL_QUADS);
@@ -873,28 +875,33 @@ void RenderHUD()
 {
     PushOverlayOrtho();
 
-    // ── Background semi-transparan untuk readability ──
+    // Auto-scale font and layout based on window height
+    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
+    glPixelZoom(fontScale, fontScale);
+
+    // ── Background semi-transparan — scaled ──
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(0.0f, 0.0f, 0.0f, 0.55f);
+    const int panelW = static_cast<int>(350 * fontScale);
+    const int panelH = static_cast<int>(500 * fontScale);
     glBegin(GL_QUADS);
     glVertex2i(0, 0);
-    glVertex2i(350, 0);
-    glVertex2i(350, 500);
-    glVertex2i(0, 500);
+    glVertex2i(panelW, 0);
+    glVertex2i(panelW, panelH);
+    glVertex2i(0, panelH);
     glEnd();
     glDisable(GL_BLEND);
 
-    // Auto-scale font based on window height
-    const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
-    glPixelZoom(fontScale, fontScale);
+    const float sx = fontScale;   // multiplier X positions
+    const float sy = fontScale;   // multiplier Y positions
 
     const LevelData &level = GetCurrentLevel();
     char buf[128];
 
     SetColor(1.0f, 1.0f, 1.0f);
     std::snprintf(buf, sizeof(buf), "Level %d: %s", level.levelNumber, level.roomName);
-    RenderString(10, 20, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10 * sx, 20 * sy, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Budget
     int spent = 0;
@@ -907,11 +914,11 @@ void RenderHUD()
         SetColor(1.0f, 0.2f, 0.2f);
 
     std::snprintf(buf, sizeof(buf), "Budget: %d / %d", spent, level.budget);
-    RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, buf);
+    RenderString(10 * sx, 40 * sy, GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
     // Checklist — item wajib
     SetColor(0.8f, 0.8f, 1.0f);
-    int lineY = 80;
+    float lineY = 80 * sy;
     for (const auto &req : level.requiredItems)
     {
         int count = 0;
@@ -931,16 +938,16 @@ void RenderHUD()
         const char *label = GetSubTypeLabel(req.subType);
         std::snprintf(buf, sizeof(buf), "[%c] %dx %s", check, req.count, label);
         SetColor((count >= req.count) ? 0.2f : 1.0f, (count >= req.count) ? 1.0f : 0.7f, 0.2f);
-        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18, buf);
-        lineY += 24;
+        RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18, buf);
+        lineY += 24 * sy;
     }
 
     // ── Furniture Selection ──
-    lineY += 8;
+    lineY += 8 * sy;
     SetColor(0.55f, 0.55f, 0.55f);
-    RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
+    RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18,
                  "--- Furniture (1-9) ---");
-    lineY += 24;
+    lineY += 24 * sy;
 
     const char *furnitureNames[] = {
         "1. Meja", "2. Sofa", "3. Kursi",
@@ -954,14 +961,15 @@ void RenderHUD()
         else
             SetColor(0.65f, 0.65f, 0.65f);
 
-        RenderString(10, static_cast<float>(lineY), GLUT_BITMAP_HELVETICA_18,
+        RenderString(10 * sx, lineY, GLUT_BITMAP_HELVETICA_18,
                      furnitureNames[i]);
-        lineY += 20;
+        lineY += 20 * sy;
     }
 
     // Petunjuk
     SetColor(0.6f, 0.6f, 0.6f);
-    RenderString(10, static_cast<float>(gWindowHeight) - 32, GLUT_BITMAP_HELVETICA_18,
+    RenderString(10 * sx, static_cast<float>(gWindowHeight) - 32 * sy,
+                 GLUT_BITMAP_HELVETICA_18,
                  "Enter = Submit | Tab = Edit/View | Esc = Menu");
 
     glPixelZoom(1.0f, 1.0f);
@@ -984,12 +992,13 @@ void RenderOverlay()
     glEnd();
     glDisable(GL_BLEND);
 
-    // Auto-scale font based on window height
+    // Auto-scale font and layout
     const float fontScale = static_cast<float>(gWindowHeight) / 480.0f;
     glPixelZoom(fontScale, fontScale);
+    const float s = fontScale;
 
-    const int cx = gWindowWidth / 2;
-    const int cy = gWindowHeight / 2;
+    const float cx = static_cast<float>(gWindowWidth) / 2.0f;
+    const float cy = static_cast<float>(gWindowHeight) / 2.0f;
     char buf[256];
 
     if (gState.gameState == GameState::MENU)
@@ -998,76 +1007,76 @@ void RenderOverlay()
 
         SetColor(0.3f, 0.6f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Interior Designer - Room %d", level.levelNumber);
-        RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) - 80,
+        RenderString(cx - 120 * s, cy - 80 * s,
                      GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
-        RenderStringMultiline(static_cast<float>(cx) - 140, static_cast<float>(cy) - 40,
+        RenderStringMultiline(cx - 140 * s, cy - 40 * s,
                               GLUT_BITMAP_HELVETICA_18, level.clientBrief);
 
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 60,
+        RenderString(cx - 100 * s, cy + 60 * s,
                      GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Mulai");
 
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 85,
+        RenderString(cx - 80 * s, cy + 85 * s,
                      GLUT_BITMAP_HELVETICA_18, "Esc = Keluar");
     }
     else if (gState.gameState == GameState::WIN)
     {
         SetColor(0.2f, 1.0f, 0.2f);
         std::snprintf(buf, sizeof(buf), " SELESAI! ");
-        RenderString(static_cast<float>(cx) - 60, static_cast<float>(cy) - 40,
+        RenderString(cx - 60 * s, cy - 40 * s,
                      GLUT_BITMAP_TIMES_ROMAN_24, buf);
 
         SetColor(1.0f, 1.0f, 1.0f);
         std::snprintf(buf, sizeof(buf), "Budget terpakai: %d / %d",
                       gState.totalSpent, GetCurrentLevel().budget);
-        RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
+        RenderString(cx - 100 * s, cy + 20 * s,
                      GLUT_BITMAP_HELVETICA_18, buf);
 
         if (gState.currentLevel + 1 < static_cast<int>(gLevels.size()))
         {
             SetColor(0.2f, 1.0f, 0.2f);
-            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 50,
+            RenderString(cx - 100 * s, cy + 50 * s,
                          GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Lanjut Level");
         }
         else
         {
             SetColor(1.0f, 0.8f, 0.2f);
-            RenderString(static_cast<float>(cx) - 120, static_cast<float>(cy) + 50,
+            RenderString(cx - 120 * s, cy + 50 * s,
                          GLUT_BITMAP_TIMES_ROMAN_24, "Semua Level Selesai!");
         }
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
+        RenderString(cx - 70 * s, cy + 75 * s,
                      GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
     else if (gState.gameState == GameState::LOSE)
     {
         SetColor(1.0f, 0.2f, 0.2f);
-        RenderString(static_cast<float>(cx) - 50, static_cast<float>(cy) - 40,
+        RenderString(cx - 50 * s, cy - 40 * s,
                      GLUT_BITMAP_TIMES_ROMAN_24, " GAGAL ");
 
         SetColor(1.0f, 1.0f, 1.0f);
         if (gState.failReason[0] != '\0')
         {
-            RenderString(static_cast<float>(cx) - 140, static_cast<float>(cy) + 20,
+            RenderString(cx - 140 * s, cy + 20 * s,
                          GLUT_BITMAP_HELVETICA_18, gState.failReason);
         }
         else
         {
             std::snprintf(buf, sizeof(buf), "Budget: %d / %d (melebihi!)",
                           gState.totalSpent, GetCurrentLevel().budget);
-            RenderString(static_cast<float>(cx) - 100, static_cast<float>(cy) + 20,
+            RenderString(cx - 100 * s, cy + 20 * s,
                          GLUT_BITMAP_HELVETICA_18, buf);
         }
 
         SetColor(0.2f, 1.0f, 0.2f);
-        RenderString(static_cast<float>(cx) - 80, static_cast<float>(cy) + 50,
+        RenderString(cx - 80 * s, cy + 50 * s,
                      GLUT_BITMAP_TIMES_ROMAN_24, "[ Enter ] - Coba Lagi");
 
         SetColor(0.6f, 0.6f, 0.6f);
-        RenderString(static_cast<float>(cx) - 70, static_cast<float>(cy) + 75,
+        RenderString(cx - 70 * s, cy + 75 * s,
                       GLUT_BITMAP_HELVETICA_18, "Esc = Menu Utama");
     }
 
@@ -1157,8 +1166,8 @@ void Display()
     RenderShadows();
     DrawSceneObjects();
 
-    // Selection highlight
-    if (HasValidSelection() && gState.gameState == GameState::PLAYING)
+    // Selection highlight — hanya di edit mode
+    if (HasValidSelection() && gState.activeMode == AppMode::EDIT_ORTHO && gState.gameState == GameState::PLAYING)
     {
         const SceneObject &sel = *GetSelectedObject();
         DrawSelectionHighlight(sel);
