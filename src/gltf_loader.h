@@ -2,6 +2,9 @@
 
 #include <vector>
 
+// Forward declaration for GL texture handle
+typedef unsigned int GLuint;
+
 // ---------------------------------------------------------------------------
 //  A single drawable primitive from a glTF mesh
 // ---------------------------------------------------------------------------
@@ -13,6 +16,7 @@ struct GLTFPrimitive
     std::vector<unsigned int> indices; // triangle indices
     float baseColor[4] = {0.8f, 0.8f, 0.8f, 1.0f};
     bool skip = false;                 // FLOOR mesh — skip in rendering
+    GLuint glTextureId = 0;           // OpenGL texture (0 = no texture, use baseColor only)
 };
 
 // ---------------------------------------------------------------------------
@@ -41,3 +45,6 @@ bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize);
 // Render a loaded glTF model using glBegin/glEnd with per-vertex color
 // Set shadowMode=true during shadow pass to skip glColor4fv (so shadow stays black).
 void DrawGLTFModel(const GLTFModel &model, bool shadowMode = false);
+
+// Free OpenGL textures allocated during loading (call at shutdown).
+void FreeGLTFModel(GLTFModel &model);

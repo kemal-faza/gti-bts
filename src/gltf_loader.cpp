@@ -1,7 +1,9 @@
 #include "gltf_loader.h"
 #include "json.hpp"
+#include "stb_image.h"
 
 #include <GL/gl.h>
+#include <GL/glu.h>
 
 #include <cmath>
 #include <cstdio>
@@ -177,9 +179,45 @@ static Mat4 GetNodeTransform(const json &node)
 }
 
 // ---------------------------------------------------------------------------
+//  Load a texture image from a file via stb_image (reuses stb implementation
+//  from texture.cpp — no STB_IMAGE_IMPLEMENTATION here).
+// ---------------------------------------------------------------------------
+static GLuint LoadGLTFTexture(const char *fullPath)
+{
+    int w, h, channels;
+    unsigned char *data = stbi_load(fullPath, &w, &h, &channels, 0);
+    if (data == nullptr)
+    {
+        fprintf(stderr, "[glTF] Failed to load texture: %s\n", fullPath);
+        return 0;
+    }
+
+    GLuint texID = 0;
+    glGenTextures(1, &texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
+
+    const GLint  internalFormat = (channels == 4) ? GL_RGBA : GL_RGB;
+    const GLenum format         = (channels == 4) ? GL_RGBA : GL_RGB;
+
+    gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, w, h, format,
+                      GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+
+    fprintf(stdout, "[glTF] Loaded texture: %s  (%dx%d, %d ch)\n", fullPath, w, h, channels);
+    return texID;
+}
+
+// ---------------------------------------------------------------------------
 //  Recursively walk scene nodes, accumulating transforms
 // ---------------------------------------------------------------------------
 static void WalkNodes(const json &doc,
+                      const char *dirPath,
                       int nodeIndex,
                       const Mat4 &parentXform,
                       const unsigned char *binData,
@@ -236,6 +274,23 @@ static void WalkNodes(const json &doc,
                         const auto &bcf = mat["pbrMetallicRoughness"]["baseColorFactor"];
                         for (int i = 0; i < 4 && i < static_cast<int>(bcf.size()); ++i)
                             p.baseColor[i] = bcf[i].get<float>();
+                    }
+
+                    // ── Load baseColorTexture if available ──
+                    if (mat.contains("pbrMetallicRoughness") &&
+                        mat["pbrMetallicRoughness"].contains("baseColorTexture"))
+                    {
+                        int texIdx = mat["pbrMetallicRoughness"]["baseColorTexture"]["index"].get<int>();
+                        if (texIdx >= 0 && texIdx < static_cast<int>(doc["textures"].size()))
+                        {
+                            int srcIdx = doc["textures"][texIdx]["source"].get<int>();
+                            if (srcIdx >= 0 && srcIdx < static_cast<int>(doc["images"].size()))
+                            {
+                                std::string uri = doc["images"][srcIdx]["uri"].get<std::string>();
+                                std::string fullPath = std::string(dirPath) + "/" + uri;
+                                p.glTextureId = LoadGLTFTexture(fullPath.c_str());
+                            }
+                        }
                     }
                 }
 
@@ -432,7 +487,7 @@ static void WalkNodes(const json &doc,
     if (node.contains("children"))
     {
         for (const auto &childIdx : node["children"])
-            WalkNodes(doc, childIdx.get<int>(), worldXform, binData, binLength, model);
+            WalkNodes(doc, dirPath, childIdx.get<int>(), worldXform, binData, binLength, model);
     }
 }
 
@@ -498,7 +553,7 @@ bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize)
     if (scene.contains("nodes"))
     {
         for (const auto &nodeIdx : scene["nodes"])
-            WalkNodes(doc, nodeIdx.get<int>(), rootXform, binData, static_cast<int>(binSize), outModel);
+            WalkNodes(doc, dirPath, nodeIdx.get<int>(), rootXform, binData, static_cast<int>(binSize), outModel);
     }
 
     delete[] binData;
@@ -602,6 +657,20 @@ void DrawGLTFModel(const GLTFModel &model, bool shadowMode)
     {
         if (prim.skip) continue;
 
+        // ── Bind base color texture if present (skip in shadow pass) ──
+        bool hadTexture = false;
+        if (!shadowMode && prim.glTextureId != 0)
+        {
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, prim.glTextureId);
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            // Reset material to neutral white so texture colors show through
+            GLfloat white[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,  white);
+            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  white);
+            hadTexture = true;
+        }
+
         // Set vertex color from material (skip during shadow pass so shadow stays black)
         if (!shadowMode)
             glColor4fv(prim.baseColor);
@@ -651,5 +720,22 @@ void DrawGLTFModel(const GLTFModel &model, bool shadowMode)
             }
             glEnd();
         }
+
+        // ── Unbind texture ──
+        if (hadTexture)
+            glDisable(GL_TEXTURE_2D);
     }
+}
+
+void FreeGLTFModel(GLTFModel &model)
+{
+    for (auto &prim : model.primitives)
+    {
+        if (prim.glTextureId != 0)
+        {
+            glDeleteTextures(1, &prim.glTextureId);
+            prim.glTextureId = 0;
+        }
+    }
+    model.primitives.clear();
 }

@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "texture.h"
 #include "ui.h"
+#include "gltf_loader.h"
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -400,6 +401,15 @@ void InitGL()
     glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
 }
 
+static void CleanupModels()
+{
+    for (int i = 0; i < 16; ++i)
+    {
+        if (!gGLTFModels[i].primitives.empty())
+            FreeGLTFModel(gGLTFModels[i]);
+    }
+}
+
 // =========================================================================
 //  Entry point
 // =========================================================================
@@ -414,6 +424,9 @@ int main(int argc, char **argv)
     InitGL();
     UpdateWindowTitle();
     gState.titleDirty = false;
+
+    // Register cleanup agar textures terhapus saat exit
+    std::atexit(CleanupModels);
 
     glutDisplayFunc(Display);
     glutReshapeFunc(Reshape);
