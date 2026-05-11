@@ -54,15 +54,6 @@ SceneObject *GetSelectedObject()
     return &gSceneObjects[gState.selectedObjectIndex];
 }
 
-void ClampSelectedObject()
-{
-    SceneObject *selected = GetSelectedObject();
-    if (selected == nullptr) return;
-
-    selected->position.x = Clamp(selected->position.x, -kObjectMoveLimit, kObjectMoveLimit);
-    selected->position.z = Clamp(selected->position.z, -kObjectMoveLimit, kObjectMoveLimit);
-}
-
 // ---------------------------------------------------------------------------
 //  Labels
 // ---------------------------------------------------------------------------
@@ -193,9 +184,12 @@ void AddNewObjectInEditMode()
         position.y = 1.0f;
     }
 
+    // Collision check sebelum placement
+    if (!CanPlaceAt(-1, type, position))
+        return;
+
     AddSceneObject(type, subType, material, position, 0.0f, cost);
     gState.selectedObjectIndex = static_cast<int>(gSceneObjects.size()) - 1;
-    ClampSelectedObject();
 }
 
 void MoveSelectedObject(const float deltaX, const float deltaZ)
@@ -203,9 +197,60 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
     SceneObject *selected = GetSelectedObject();
     if (selected == nullptr) return;
 
-    selected->position.x += deltaX;
-    selected->position.z += deltaZ;
-    ClampSelectedObject();
+    Vec3 newPos = selected->position;
+    newPos.x += deltaX;
+    newPos.z += deltaZ;
+
+    newPos.x = Clamp(newPos.x, -kRoomSize, kRoomSize);
+    newPos.z = Clamp(newPos.z, -kRoomSize, kRoomSize);
+
+    if (!CanPlaceAt(gState.selectedObjectIndex, selected->type, newPos))
+        return;
+
+    selected->position = newPos;
+}
+
+// ---------------------------------------------------------------------------
+//  Collision detection
+// ---------------------------------------------------------------------------
+
+void GetBounds(const ObjectType type, float &halfX, float &halfZ)
+{
+    switch (type)
+    {
+    case ObjectType::CUBE:     halfX = 1.0f; halfZ = 1.0f; break;
+    case ObjectType::CYLINDER: halfX = 0.7f; halfZ = 0.7f; break;
+    case ObjectType::ROAD:     halfX = 3.0f; halfZ = 1.5f; break;
+    }
+}
+
+bool CanPlaceAt(const int excludeIndex, const ObjectType type, const Vec3 position)
+{
+    float hw, hd;
+    GetBounds(type, hw, hd);
+
+    // Boundary check
+    if (position.x - hw < -kRoomSize || position.x + hw > kRoomSize) return false;
+    if (position.z - hd < -kRoomSize || position.z + hd > kRoomSize) return false;
+
+    // Collision check against all other objects
+    for (int i = 0; i < static_cast<int>(gSceneObjects.size()); ++i)
+    {
+        if (i == excludeIndex) continue;
+
+        const SceneObject &other = gSceneObjects[i];
+        float ohw, ohd;
+        GetBounds(other.type, ohw, ohd);
+
+        if (position.x - hw < other.position.x + ohw &&
+            position.x + hw > other.position.x - ohw &&
+            position.z - hd < other.position.z + ohd &&
+            position.z + hd > other.position.z - ohd)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 // ---------------------------------------------------------------------------

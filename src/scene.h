@@ -138,7 +138,7 @@ extern bool gKeyDown[256];
 inline constexpr int    kGridHalfSize         = 20;
 inline constexpr float  kGridStep             = 1.0f;
 inline constexpr float  kOrthoSize            = 12.0f;
-inline constexpr float  kObjectMoveLimit      = 18.0f;
+inline constexpr float  kRoomSize             = 8.0f;
 inline constexpr float  kGridY                = 0.01f;
 inline constexpr float  kEditMoveSpeed        = 0.18f;
 inline constexpr float  kViewMoveSpeed        = 0.24f;
@@ -154,7 +154,6 @@ float   ToRadians(float degree);
 
 bool         HasValidSelection();
 SceneObject *GetSelectedObject();
-void         ClampSelectedObject();
 
 const char *ModeLabel();
 const char *PresetLabel();
@@ -168,6 +167,8 @@ void AddSceneObject(ObjectType type, ObjectSubType subType,
                     float rotationY, int cost);
 void AddNewObjectInEditMode();
 void MoveSelectedObject(float deltaX, float deltaZ);
+void GetBounds(ObjectType type, float &halfX, float &halfZ);
+bool CanPlaceAt(int excludeIndex, ObjectType type, Vec3 position);
 
 void InitializeLevels();
 const LevelData &GetCurrentLevel();
