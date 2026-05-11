@@ -340,6 +340,7 @@ void RenderShadows()
     const float lz =  0.25f;
 
     const GLboolean wasLighting = glIsEnabled(GL_LIGHTING);
+    const GLboolean wasBlend    = glIsEnabled(GL_BLEND);
 
     glEnable(GL_STENCIL_TEST);
 
@@ -384,7 +385,7 @@ void RenderShadows()
         glPopMatrix();
     }
 
-    glDisable(GL_BLEND);
+    if (!wasBlend) glDisable(GL_BLEND);
     glDisable(GL_STENCIL_TEST);
 
     // Restore state untuk scene rendering

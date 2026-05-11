@@ -344,6 +344,7 @@ void InitGL()
 
     InitTextures();
 
+    glClearStencil(0);
     glClearColor(0.08f, 0.09f, 0.12f, 1.0f);
     ApplyDepthTestMode();
     glEnable(GL_LIGHTING);
