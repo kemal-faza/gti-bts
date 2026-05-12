@@ -50,7 +50,7 @@ g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32 -std=c++17 -Isrc
 | Requirement | 50 | Semua item wajib terpasang |
 | Bonus Rules | 30 | +10 per rule, max 3 |
 | Aesthetics | 20 | Balance + Utilization |
-| Penalti | -50 | -5 per placement gagal |
+| Penalti | -50 (capped) | -5 per insiden: (1) Space di area terhalang (2) geser objek bertabrakan |
 
 ## Kontrol Lengkap
 
@@ -66,7 +66,8 @@ g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32 -std=c++17 -Isrc
 |--------|--------|
 | 1 — 8 | Pilih jenis furnitur (Meja, Sofa, Kursi, Meja Bundar, Lemari, Rak, Karpet, Lampu) |
 | Space | Tempatkan furnitur terpilih |
-| W A S D | Geser objek terpilih |
+| W A S D | Geser objek (kecepatan normal) |
+| Shift + W A S D | Geser pelan (kecepatan 30%, presisi) |
 | Q / E | Rotasi objek (-15° / +15°) |
 | [ / ] | Pilih objek sebelumnya / berikutnya |
 | X / Delete | Hapus objek terpilih |
@@ -83,6 +84,26 @@ g++ src/*.cpp -o build/main.exe -lfreeglut -lopengl32 -lglu32 -std=c++17 -Isrc
 | F | Toggle smooth / flat shading |
 | Z | Toggle depth test |
 | P | Toggle fly-through kamera (auto orbit) |
+
+## Aturan Khusus
+
+### Collision & KARPET
+- Objek **non-KARPET** tidak boleh saling bertabrakan atau menumpuk
+- **KARPET** adalah objek spesial — bisa overlap dengan SEMUA objek (termasuk KARPET lain)
+- Meja/sofa/kursi boleh diletakkan **di atas KARPET**, tapi tidak sebaliknya dengan sesama non-KARPET
+- Semua objek harus berada di dalam ruangan (±4 unit dari pusat)
+
+### Penalti (max -50 poin)
+
+Penalti -5 terjadi setiap kali:
+
+| Aksi | Penjelasan |
+|------|------------|
+| **Space** | Menambah objek tapi semua posisi grid sudah terhalang |
+| **WASD / Drag** | Menggeser objek ke posisi yang bertabrakan dengan objek lain |
+
+> Pemain bisa mendapat penalti berkali-kali dalam satu level.
+> Tidak ada indikator visual real-time — penalti baru terlihat saat **Enter (Submit)**.
 
 ## Struktur Project
 
