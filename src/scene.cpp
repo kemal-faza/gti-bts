@@ -448,6 +448,10 @@ bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType,
         if (i == excludeIndex) continue;
 
         const SceneObject &other = gSceneObjects[i];
+
+        // Semua objek boleh overlap dengan karpet
+        if (other.subType == ObjectSubType::KARPET) continue;
+
         float ohw, ohd, ohh;
         GetBounds(other.subType, ohw, ohd, ohh);
 
