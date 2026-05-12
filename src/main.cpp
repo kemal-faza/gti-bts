@@ -358,10 +358,11 @@ void Idle()
 
     if (gState.activeMode == AppMode::EDIT_ORTHO)
     {
-        if (gKeyDown[static_cast<unsigned char>('w')]) { deltaZ -= kEditMoveSpeed; changed = true; }
-        if (gKeyDown[static_cast<unsigned char>('s')]) { deltaZ += kEditMoveSpeed; changed = true; }
-        if (gKeyDown[static_cast<unsigned char>('a')]) { deltaX -= kEditMoveSpeed; changed = true; }
-        if (gKeyDown[static_cast<unsigned char>('d')]) { deltaX += kEditMoveSpeed; changed = true; }
+        const float speedMult = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) ? 0.3f : 1.0f;
+        if (gKeyDown[static_cast<unsigned char>('w')]) { deltaZ -= kEditMoveSpeed * speedMult; changed = true; }
+        if (gKeyDown[static_cast<unsigned char>('s')]) { deltaZ += kEditMoveSpeed * speedMult; changed = true; }
+        if (gKeyDown[static_cast<unsigned char>('a')]) { deltaX -= kEditMoveSpeed * speedMult; changed = true; }
+        if (gKeyDown[static_cast<unsigned char>('d')]) { deltaX += kEditMoveSpeed * speedMult; changed = true; }
 
         if (changed)
         {
@@ -378,12 +379,13 @@ void Idle()
     const float rightX   =  std::cos(yawRad);
     const float rightZ   = -std::sin(yawRad);
 
-    if (gKeyDown[static_cast<unsigned char>('w')]) { gViewTarget.x += forwardX * kViewMoveSpeed; gViewTarget.z += forwardZ * kViewMoveSpeed; changed = true; }
-    if (gKeyDown[static_cast<unsigned char>('s')]) { gViewTarget.x -= forwardX * kViewMoveSpeed; gViewTarget.z -= forwardZ * kViewMoveSpeed; changed = true; }
-    if (gKeyDown[static_cast<unsigned char>('a')]) { gViewTarget.x -= rightX   * kViewMoveSpeed; gViewTarget.z -= rightZ   * kViewMoveSpeed; changed = true; }
-    if (gKeyDown[static_cast<unsigned char>('d')]) { gViewTarget.x += rightX   * kViewMoveSpeed; gViewTarget.z += rightZ   * kViewMoveSpeed; changed = true; }
-    if (gKeyDown[static_cast<unsigned char>('q')]) { gViewTarget.y += kViewMoveSpeed; changed = true; }
-    if (gKeyDown[static_cast<unsigned char>('e')]) { gViewTarget.y -= kViewMoveSpeed; changed = true; }
+    const float speedMult = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) ? 0.3f : 1.0f;
+    if (gKeyDown[static_cast<unsigned char>('w')]) { gViewTarget.x += forwardX * kViewMoveSpeed * speedMult; gViewTarget.z += forwardZ * kViewMoveSpeed * speedMult; changed = true; }
+    if (gKeyDown[static_cast<unsigned char>('s')]) { gViewTarget.x -= forwardX * kViewMoveSpeed * speedMult; gViewTarget.z -= forwardZ * kViewMoveSpeed * speedMult; changed = true; }
+    if (gKeyDown[static_cast<unsigned char>('a')]) { gViewTarget.x -= rightX   * kViewMoveSpeed * speedMult; gViewTarget.z -= rightZ   * kViewMoveSpeed * speedMult; changed = true; }
+    if (gKeyDown[static_cast<unsigned char>('d')]) { gViewTarget.x += rightX   * kViewMoveSpeed * speedMult; gViewTarget.z += rightZ   * kViewMoveSpeed * speedMult; changed = true; }
+    if (gKeyDown[static_cast<unsigned char>('q')]) { gViewTarget.y += kViewMoveSpeed * speedMult; changed = true; }
+    if (gKeyDown[static_cast<unsigned char>('e')]) { gViewTarget.y -= kViewMoveSpeed * speedMult; changed = true; }
 
     // Clamp view target agar tidak terlalu jauh dari ruangan
     if (changed)

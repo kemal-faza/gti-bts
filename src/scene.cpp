@@ -438,6 +438,10 @@ bool CanPlaceAt(const int excludeIndex, const ObjectSubType subType,
     if (position.x - boundHw < -kRoomSize || position.x + boundHw > kRoomSize) return false;
     if (position.z - boundHd < -kRoomSize || position.z + boundHd > kRoomSize) return false;
 
+    // KARPET boleh overlap dengan objek lain
+    if (subType == ObjectSubType::KARPET)
+        return true;
+
     // Collision check against all other objects
     for (int i = 0; i < static_cast<int>(gSceneObjects.size()); ++i)
     {
