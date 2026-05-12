@@ -280,7 +280,7 @@ void RenderString(float x, float y, float scale, const char *text)
 
         // In overlay (Y-down): text top at y, baseline at y + s_bakeAscent * factor
         float dx = g.xoff * factor;
-        float dy = (s_bakeAscent - g.yoff) * factor;
+        float dy = (s_bakeAscent + g.yoff) * factor;
         float dw = static_cast<float>(g.bitmapW) * factor;
         float dh = static_cast<float>(g.bitmapH) * factor;
 
