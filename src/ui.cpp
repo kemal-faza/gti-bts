@@ -45,8 +45,8 @@ static unsigned char *s_ttfData    = nullptr;
 // ── Scale helpers ──
 // Heading ≈ 2.0% of window height, Body ≈ 1.4% of window height.
 // These produce readable text without dominating the viewport.
-float HeadingScale() { return gWindowHeight * 0.020f; }
-float BodyScale()    { return gWindowHeight * 0.014f; }
+float HeadingScale() { return gWindowHeight * 0.028f; }
+float BodyScale()    { return gWindowHeight * 0.020f; }
 float HeadingLineH() { return (s_bakeAscent - s_bakeDescent + s_bakeLineGap) * (HeadingScale() / BAKE_SIZE); }
 float BodyLineH()    { return (s_bakeAscent - s_bakeDescent + s_bakeLineGap) * (BodyScale() / BAKE_SIZE); }
 

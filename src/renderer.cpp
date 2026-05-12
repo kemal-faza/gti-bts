@@ -672,8 +672,8 @@ void RenderHUD()
     const float bLineH = BodyLineH();
 
     // ── Background semi-transparan (proportional to window) ──
-    const int bgW = static_cast<int>(W * 0.22f);
-    const int bgH = static_cast<int>(H * 0.58f);
+    const int bgW = static_cast<int>(W * 0.30f);
+    const int bgH = static_cast<int>(H * 0.65f);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glColor4f(0.0f, 0.0f, 0.0f, 0.50f);
