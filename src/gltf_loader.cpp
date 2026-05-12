@@ -211,7 +211,6 @@ static GLuint LoadGLTFTexture(const char *fullPath)
 
     stbi_image_free(data);
 
-    fprintf(stdout, "[glTF] Loaded texture: %s  (%dx%d, %d ch)\n", fullPath, w, h, channels);
     return texID;
 }
 
@@ -265,8 +264,7 @@ static void WalkNodes(const json &doc,
                     if (isBlend && (nameHasFloor || meshHasFloor))
                     {
                         p.skip = true;
-                        fprintf(stdout, "[glTF] Skipping FLOOR mesh: '%s' material='%s'\n",
-                                meshName.c_str(), matName.c_str());
+                        // log: skipping FLOOR mesh
                     }
 
                     // Read baseColorFactor
@@ -663,10 +661,6 @@ bool LoadGLTF(const char *dirPath, GLTFModel &outModel, float targetSize)
     if (outModel.boundsHalfX < 0.01f) outModel.boundsHalfX = 0.5f;
     if (outModel.boundsHalfZ < 0.01f) outModel.boundsHalfZ = 0.5f;
     if (outModel.boundsHalfY < 0.01f) outModel.boundsHalfY = 0.5f;
-
-    fprintf(stdout, "[glTF] Loaded %s: %zu primitives, scale=%.4f, offsetY=%.4f, bounds=(%.2f, %.2f, %.2f)\n",
-            dirPath, outModel.primitives.size(), outModel.normalizeScale, outModel.offsetY,
-            outModel.boundsHalfX, outModel.boundsHalfY, outModel.boundsHalfZ);
 
     return true;
 }

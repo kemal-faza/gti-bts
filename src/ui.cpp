@@ -217,7 +217,6 @@ bool FontInit()
             continue;
         }
 
-        fprintf(stdout, "[Font] Loaded: %s  (baked at %.0fpx)\n", *pp, BAKE_SIZE);
         return true;
     }
 

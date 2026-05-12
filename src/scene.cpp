@@ -41,9 +41,6 @@ void LoadAllGLTFModels()
             prim.baseColor[3] = 1.0f;
         }
     }
-
-    fprintf(stdout, "[Init] Loaded %d glTF models\n",
-            static_cast<int>(sizeof(models) / sizeof(models[0])));
 }
 
 // ---------------------------------------------------------------------------
@@ -64,6 +61,7 @@ float gViewDistance  = 10.0f;
 std::vector<SceneObject> gSceneObjects;
 std::vector<LevelData> gLevels;
 bool gKeyDown[256] = {false};
+bool gShiftHeld = false;
 float gAnimTime = 0.0f;
 
 // ---------------------------------------------------------------------------
@@ -335,7 +333,6 @@ void AddNewObjectInEditMode()
     // Collision check sebelum placement
     if (!CanPlaceAt(-1, subType, position))
     {
-        fprintf(stderr, "[Ruang] Tidak bisa menempatkan: area terhalang atau di luar ruangan\n");
         gState.penaltyCount++;
         gState.titleDirty = true;
         return;
@@ -362,7 +359,6 @@ void MoveSelectedObject(const float deltaX, const float deltaZ)
 
     if (!CanPlaceAt(gState.selectedObjectIndex, selected->subType, newPos, selected->rotationY))
     {
-        fprintf(stderr, "[Ruang] Tidak bisa geser: area terhalang\n");
         gState.penaltyCount++;
         gState.titleDirty = true;
         return;

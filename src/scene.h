@@ -162,6 +162,7 @@ extern float gViewDistance;
 extern std::vector<SceneObject> gSceneObjects;
 extern std::vector<LevelData> gLevels;
 extern bool gKeyDown[256];
+extern bool gShiftHeld;
 extern float gAnimTime;
 
 // glTF model storage — indexed by static_cast<int>(ObjectSubType)

@@ -237,8 +237,9 @@ static void HandleViewKeys(unsigned char key)
     }
 }
 
-void KeyboardDown(unsigned char key, int, int)
+void KeyboardDown(unsigned char key, int x, int y)
 {
+    gShiftHeld = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) != 0;
     const unsigned char lowered = static_cast<unsigned char>(std::tolower(key));
     if (HandleGlobalKeys(key)) return;
 
@@ -251,8 +252,9 @@ void KeyboardDown(unsigned char key, int, int)
         HandleViewKeys(lowered);
 }
 
-void KeyboardUp(unsigned char key, int, int)
+void KeyboardUp(unsigned char key, int x, int y)
 {
+    gShiftHeld = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) != 0;
     const unsigned char lowered = static_cast<unsigned char>(std::tolower(key));
     gKeyDown[lowered] = false;
 }
@@ -358,7 +360,7 @@ void Idle()
 
     if (gState.activeMode == AppMode::EDIT_ORTHO)
     {
-        const float speedMult = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) ? 0.3f : 1.0f;
+        const float speedMult = gShiftHeld ? 0.3f : 1.0f;
         if (gKeyDown[static_cast<unsigned char>('w')]) { deltaZ -= kEditMoveSpeed * speedMult; changed = true; }
         if (gKeyDown[static_cast<unsigned char>('s')]) { deltaZ += kEditMoveSpeed * speedMult; changed = true; }
         if (gKeyDown[static_cast<unsigned char>('a')]) { deltaX -= kEditMoveSpeed * speedMult; changed = true; }
@@ -379,7 +381,7 @@ void Idle()
     const float rightX   =  std::cos(yawRad);
     const float rightZ   = -std::sin(yawRad);
 
-    const float speedMult = (glutGetModifiers() & GLUT_ACTIVE_SHIFT) ? 0.3f : 1.0f;
+    const float speedMult = gShiftHeld ? 0.3f : 1.0f;
     if (gKeyDown[static_cast<unsigned char>('w')]) { gViewTarget.x += forwardX * kViewMoveSpeed * speedMult; gViewTarget.z += forwardZ * kViewMoveSpeed * speedMult; changed = true; }
     if (gKeyDown[static_cast<unsigned char>('s')]) { gViewTarget.x -= forwardX * kViewMoveSpeed * speedMult; gViewTarget.z -= forwardZ * kViewMoveSpeed * speedMult; changed = true; }
     if (gKeyDown[static_cast<unsigned char>('a')]) { gViewTarget.x -= rightX   * kViewMoveSpeed * speedMult; gViewTarget.z -= rightZ   * kViewMoveSpeed * speedMult; changed = true; }

@@ -92,7 +92,6 @@ static GLuint LoadTextureFromFile(const char *path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
-    fprintf(stdout, "[Ruang] Loaded texture: %s  (%dx%d, %d ch)\n", path, w, h, channels);
     return texID;
 }
 
