@@ -125,6 +125,11 @@ static bool BakeFontAtlas(stbtt_fontinfo &font)
         }
 
         // Store glyph info
+        // glTexImage2D treats data row 0 as V=0 (bottom of texture).
+        // stb_truetype packs from the top of data (packY=0).
+        // So a glyph's top row (data row packY) is at V = packY/ATLAS_H
+        // (near bottom of texture — low V = top of glyph data).
+        // v0 < v1: v0 = top of glyph, v1 = bottom of glyph.
         s_glyphs[i].u0 = static_cast<float>(packX)         / static_cast<float>(ATLAS_W);
         s_glyphs[i].v0 = static_cast<float>(packY)         / static_cast<float>(ATLAS_H);
         s_glyphs[i].u1 = static_cast<float>(packX + w)     / static_cast<float>(ATLAS_W);
@@ -253,6 +258,8 @@ void RenderString(float x, float y, float scale, const char *text)
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, s_atlasTexture);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     float cursorX = x;
     for (const char *cp = text; *cp != '\0'; ++cp)
@@ -279,16 +286,17 @@ void RenderString(float x, float y, float scale, const char *text)
         float dh = static_cast<float>(g.bitmapH) * factor;
 
         glBegin(GL_QUADS);
-        glTexCoord2f(g.u0, g.v1); glVertex2f(cursorX + dx, y + dy);
-        glTexCoord2f(g.u1, g.v1); glVertex2f(cursorX + dx + dw, y + dy);
-        glTexCoord2f(g.u1, g.v0); glVertex2f(cursorX + dx + dw, y + dy + dh);
-        glTexCoord2f(g.u0, g.v0); glVertex2f(cursorX + dx, y + dy + dh);
+        glTexCoord2f(g.u0, g.v0); glVertex2f(cursorX + dx, y + dy);
+        glTexCoord2f(g.u1, g.v0); glVertex2f(cursorX + dx + dw, y + dy);
+        glTexCoord2f(g.u1, g.v1); glVertex2f(cursorX + dx + dw, y + dy + dh);
+        glTexCoord2f(g.u0, g.v1); glVertex2f(cursorX + dx, y + dy + dh);
         glEnd();
 
         cursorX += g.xadvance * factor;
     }
 
     glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
 }
 
 void RenderStringMultiline(float x, float y, float scale, const char *text)

@@ -53,7 +53,7 @@ void ApplyCameraViewMatrix()
 
     if (gState.activeMode == AppMode::EDIT_ORTHO)
     {
-        gluLookAt(0.0, 24.0, 0.0,
+        gluLookAt(0.0, 16.0, 0.0,
                   0.0,  0.0, 0.0,
                   0.0,  0.0, -1.0);
         return;

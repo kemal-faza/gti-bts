@@ -19,7 +19,7 @@ void LoadAllGLTFModels()
         {ObjectSubType::KURSI,       "assets/object/chair",          1.0f},
         {ObjectSubType::MEJA_BUNDAR, "assets/object/rounded-table",  1.5f},
         {ObjectSubType::LAMPU,       "assets/object/lamp",           1.5f},
-        {ObjectSubType::KARPET,      "assets/object/carpet",         4.0f},
+        {ObjectSubType::KARPET,      "assets/object/carpet",         3.0f},
         {ObjectSubType::KIPAS,       "assets/object/fan",            1.0f},
     };
 
@@ -55,11 +55,11 @@ AppState gState;
 int       gWindowWidth  = 960;
 int       gWindowHeight = 640;
 
-Vec3 gPointLightPos  = {8.0f, 6.0f, 8.0f};
-Vec3 gViewTarget     = {0.0f, 2.0f, 0.0f};
+Vec3 gPointLightPos  = {4.0f, 4.0f, 4.0f};
+Vec3 gViewTarget     = {0.0f, 1.5f, 0.0f};
 float gViewYawDeg    = 0.0f;
 float gViewPitchDeg  = 0.0f;
-float gViewDistance  = 18.0f;
+float gViewDistance  = 10.0f;
 
 std::vector<SceneObject> gSceneObjects;
 std::vector<LevelData> gLevels;
@@ -87,14 +87,14 @@ float ToRadians(const float degree)
 // ---------------------------------------------------------------------------
 
 FlyWaypoint gFlyWaypoints[8] = {
-    {{ 0.0f,  5.0f, 18.0f}, {0.0f, 2.0f,  0.0f}},  // depan
-    {{14.0f,  6.0f, 14.0f}, {0.0f, 2.0f,  0.0f}},  // kanan+depan
-    {{18.0f,  7.0f,  0.0f}, {0.0f, 2.0f,  0.0f}},  // kanan
-    {{14.0f,  8.0f,-14.0f}, {0.0f, 2.0f,  0.0f}},  // kanan+belakang
-    {{ 0.0f,  9.0f,-18.0f}, {0.0f, 2.0f,  0.0f}},  // belakang
-    {{-14.0f, 8.0f,-14.0f}, {0.0f, 2.0f,  0.0f}},  // kiri+belakang
-    {{-18.0f, 7.0f,  0.0f}, {0.0f, 2.0f,  0.0f}},  // kiri
-    {{-14.0f, 6.0f, 14.0f}, {0.0f, 2.0f,  0.0f}},  // kiri+depan
+    {{ 0.0f,  3.0f,  9.0f}, {0.0f, 1.5f,  0.0f}},  // depan
+    {{ 7.0f,  3.5f,  7.0f}, {0.0f, 1.5f,  0.0f}},  // kanan+depan
+    {{ 9.0f,  4.0f,  0.0f}, {0.0f, 1.5f,  0.0f}},  // kanan
+    {{ 7.0f,  4.5f, -7.0f}, {0.0f, 1.5f,  0.0f}},  // kanan+belakang
+    {{ 0.0f,  5.0f, -9.0f}, {0.0f, 1.5f,  0.0f}},  // belakang
+    {{-7.0f,  4.5f, -7.0f}, {0.0f, 1.5f,  0.0f}},  // kiri+belakang
+    {{-9.0f,  4.0f,  0.0f}, {0.0f, 1.5f,  0.0f}},  // kiri
+    {{-7.0f,  3.5f,  7.0f}, {0.0f, 1.5f,  0.0f}},  // kiri+depan
 };
 const int gFlyWaypointCount = 8;
 
@@ -193,11 +193,11 @@ void SetPerspectivePreset(const CameraPreset preset)
     gState.cameraPreset = preset;
 
     if (preset == CameraPreset::ONE_POINT)
-        SetOrbitFromEyeTarget({0.0f, 2.0f, 18.0f}, {0.0f, 2.0f, 0.0f});
+        SetOrbitFromEyeTarget({0.0f, 2.0f, 10.0f}, {0.0f, 1.5f, 0.0f});
     else if (preset == CameraPreset::TWO_POINT)
-        SetOrbitFromEyeTarget({16.0f, 3.0f, 16.0f}, {0.0f, 2.0f, 0.0f});
+        SetOrbitFromEyeTarget({8.0f, 3.0f, 8.0f}, {0.0f, 1.5f, 0.0f});
     else if (preset == CameraPreset::THREE_POINT)
-        SetOrbitFromEyeTarget({14.0f, 14.0f, 14.0f}, {0.0f, 0.0f, 0.0f});
+        SetOrbitFromEyeTarget({7.0f, 8.0f, 7.0f}, {0.0f, 0.5f, 0.0f});
     else
         gState.cameraPreset = CameraPreset::FREE;
 }
@@ -534,8 +534,8 @@ void InitializeLevels()
             {BonusRuleType::EXCLUSION_ZONE, ObjectSubType::NONE, ObjectSubType::NONE, 1.5f,
              "Pintu tidak terhalang (zona 3x3 di (7,-7))"},
         };
-        lv.bonusRules.back().zoneX = 7.0f;
-        lv.bonusRules.back().zoneZ = -7.0f;
+        lv.bonusRules.back().zoneX = 3.5f;
+        lv.bonusRules.back().zoneZ = -3.5f;
         gLevels.push_back(lv);
     }
 }

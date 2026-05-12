@@ -173,10 +173,10 @@ void LoadAllGLTFModels();
 //  Constants
 // ---------------------------------------------------------------------------
 
-inline constexpr int    kGridHalfSize         = 20;
+inline constexpr int    kGridHalfSize         = 8;
 inline constexpr float  kGridStep             = 1.0f;
-inline constexpr float  kOrthoSize            = 12.0f;
-inline constexpr float  kRoomSize             = 8.0f;
+inline constexpr float  kOrthoSize            = 6.0f;
+inline constexpr float  kRoomSize             = 4.0f;
 inline constexpr float  kGridY                = 0.01f;
 inline constexpr float  kEditMoveSpeed        = 0.18f;
 inline constexpr float  kViewMoveSpeed        = 0.24f;
